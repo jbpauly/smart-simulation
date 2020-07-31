@@ -18,3 +18,12 @@ def test_decide(monkeypatch):
         cs.decide(-1)
     with pytest.raises(ValueError):
         cs.decide(1.1)
+
+
+def test_consume():
+    test_random_function = random.randint
+    test_function_parameters = (1, 1)
+
+    assert cs.consume(test_random_function, test_function_parameters) == 1
+    with pytest.raises(TypeError):
+        cs.consume(test_random_function, None)
