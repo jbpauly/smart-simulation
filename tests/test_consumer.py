@@ -1,7 +1,6 @@
 import random
 
 import pytest
-
 from smart_simulation import consumer as cs
 
 

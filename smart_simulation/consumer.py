@@ -4,9 +4,11 @@ import random
 from collections import namedtuple
 
 import daiquiri
+from smart_simulation.cfg_templates import customers
+
+CUSTOMERS = importlib.import_module("cfg_templates.customers")
 
 daiquiri.setup(level=logging.INFO)
-CUSTOMERS = importlib.import_module("cfg_templates.customers")
 
 
 def decide(probability: float) -> bool:
