@@ -4,9 +4,9 @@
 
 
 import unittest
+
 from click.testing import CliRunner
 
-from smart_simulation import smart_simulation
 from smart_simulation import cli
 
 
@@ -27,7 +27,7 @@ class TestSmart_simulation(unittest.TestCase):
         runner = CliRunner()
         result = runner.invoke(cli.main)
         assert result.exit_code == 0
-        assert 'smart_simulation.cli.main' in result.output
-        help_result = runner.invoke(cli.main, ['--help'])
+        assert "smart_simulation.cli.main" in result.output
+        help_result = runner.invoke(cli.main, ["--help"])
         assert help_result.exit_code == 0
-        assert '--help  Show this message and exit.' in help_result.output
+        assert "--help  Show this message and exit." in help_result.output

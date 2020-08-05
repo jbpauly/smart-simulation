@@ -1,12 +1,9 @@
-import importlib
 import logging
 import random
 from collections import namedtuple
 
 import daiquiri
 from smart_simulation.cfg_templates import customers
-
-CUSTOMERS = importlib.import_module("cfg_templates.customers")
 
 daiquiri.setup(level=logging.INFO)
 
@@ -102,8 +99,8 @@ def get_customer(customer_number):
     Returns:
         Customer configuration namedtuple
     """
-    if customer_number in CUSTOMERS.customers:
-        return CUSTOMERS.customers[customer_number]
+    if customer_number in customers.customers:
+        return customers.customers[customer_number]
     else:
         raise Exception(
             "Customer: "
