@@ -1,7 +1,7 @@
 import random
 
 import pytest
-from smart_simulation import consumer as cs
+import smart_simulation.consumer as cs
 
 
 def test_decide(monkeypatch):

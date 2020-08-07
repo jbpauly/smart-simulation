@@ -6,9 +6,7 @@ import sys
 import click
 
 import daiquiri
-
-consumer = importlib.import_module("consumer")
-
+from smart_simulation import consumer
 
 daiquiri.setup(level=logging.INFO)
 logger = daiquiri.getLogger(__name__)
