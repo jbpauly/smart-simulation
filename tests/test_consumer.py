@@ -5,6 +5,7 @@ import pandas as pd
 
 import pytest
 import smart_simulation.consumer as cs
+from smart_simulation.cfg_templates import customers as ct
 from tests.test_components import test_cfg
 
 
@@ -12,7 +13,7 @@ def test_decide(monkeypatch):
     """
     Test the decide() function from the consumer module
     Args:
-        monkeypatch: patch for called methods
+        monkeypatch: patch for necessary attributes
     """
 
     # mock the Python Random Class function random() used for random chance
@@ -59,7 +60,7 @@ def test_single_day(monkeypatch):
     """
     Test the single_day() function from the consumer module
     Args:
-        monkeypatch: patch for called methods
+        monkeypatch: patch for necessary attributes
     """
 
     # Mock the decide() function from the consumers module
@@ -92,7 +93,7 @@ def test_multi_day(monkeypatch):
     """
     Test the multi_day() function from the consumer module
     Args:
-        monkeypatch: patch for called methods
+        monkeypatch: patch for necessary attributes
     """
 
     # Mock the get_customer() function from consumers module
@@ -119,10 +120,35 @@ def test_multi_day(monkeypatch):
         assert cs.multi_day(customer_number="0", days="not_int")  # must be an int
 
 
+def test_get_customer(monkeypatch):
+    """
+    Test the get_customer() function from the consumer module
+    Args:
+        monkeypatch: patch for necessary attributes
+    """
+
+    # Mock the customers configurations in the customers module
+    def mock_customers():
+        return test_cfg.customers
+
+    monkeypatch.setattr(ct, "customers", mock_customers())
+
+    # Positive testing
+    valid_output = test_cfg.customers["test"]
+    test_output = cs.get_customer(customer_number="test")
+    assert valid_output == test_output
+
+    # Negative testing
+    with pytest.raises(Exception):
+        assert cs.get_customer(customer_number="not_a_customer")
+
+
 def test_write_output():
     """
     Test the write_output() function of the consumer module
     """
+    from tests import test_components
+
     test_path = pathlib.Path.cwd() / "test_components"
     test_df = pd.DataFrame()
     test_file_name = "test_write_out.csv"
