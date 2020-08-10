@@ -1,11 +1,24 @@
 import logging
+import pathlib
 import random
 from collections import namedtuple
+
+import numpy as np
+import pandas as pd
 
 import daiquiri
 from smart_simulation.cfg_templates import customers
 
-daiquiri.setup(level=logging.INFO)
+daiquiri.setup(
+    level=logging.INFO,
+    outputs=(
+        daiquiri.output.Stream(
+            formatter=daiquiri.formatter.ColorFormatter(
+                fmt="%(asctime)s [%(levelname)s] %(name)s.%(" "funcName)s: %(message)s"
+            )
+        ),
+    ),
+)
 
 
 def decide(probability: float) -> bool:
@@ -22,7 +35,8 @@ def decide(probability: float) -> bool:
     if probability < 0 or probability > 1:
         logging.exception("Probability is an invalid number. Check configuration.")
         raise ValueError
-    return random.random() < probability
+    chance = random.random()
+    return chance < probability
 
 
 def consume(random_function: random.random, function_params: tuple) -> int:
@@ -48,7 +62,7 @@ def consume(random_function: random.random, function_params: tuple) -> int:
     return quantity
 
 
-def single_day(customer_config: namedtuple, day: int):
+def single_day(customer_config: namedtuple, day_of_week: int):
     """
     Generate consumption data for a customer on a single day
 
@@ -59,7 +73,15 @@ def single_day(customer_config: namedtuple, day: int):
     Returns:
         Quantity of product consumed
     """
-    day_profile = customer_config[day]
+
+    if not isinstance(day_of_week, int):
+        logging.exception("day must be an int.")
+        raise TypeError
+    if day_of_week < 0 or day_of_week > 6:
+        logging.exception("day_of_week must be an int in the range 0-6, inclusive.")
+        raise ValueError
+
+    day_profile = customer_config[day_of_week]
     decision_probability = day_profile.probability
     consumption_generator = day_profile.consumption
     quantity = 0
@@ -70,24 +92,38 @@ def single_day(customer_config: namedtuple, day: int):
     return quantity
 
 
-def multi_day(customer_number: str, days: int):
+def multi_day(
+    customer_number: str, days: int, start_date: str = "2020-01-01"
+) -> pd.DataFrame:
     """
     Generate consumption data for a customer for a given range of days
 
     Args:
+        start_date: Start date of time range for data creation
         customer_number: ID number of customer, which should exist in the customers config file
         days: Number of days to generate data
 
     Returns:
-        A list of product consumption in single quantity units
+        A Pandas DataFrame of product consumption in units of serving
     """
+    if not isinstance(customer_number, str):
+        logging.exception("customer_number must be a string.")
+        raise TypeError
+
+    if not isinstance(days, int):
+        logging.exception("days must be an int.")
+        raise TypeError
+
     customer_config = get_customer(customer_number)
-    consumption = []
-    days_in_week = 7
-    for day in range(0, days):
-        day_of_week = day % days_in_week
-        consumption.append(single_day(customer_config, day_of_week))
-    return consumption
+    consumption_servings = pd.DataFrame(
+        data=np.zeros(days, dtype=int),
+        index=pd.date_range(start_date, periods=days, freq="D"),
+        columns=["servings"],
+    )
+    for day in consumption_servings.index:
+        day_of_week = day.dayofweek
+        consumption_servings["servings"][day] = single_day(customer_config, day_of_week)
+    return consumption_servings
 
 
 def get_customer(customer_number):
@@ -109,9 +145,26 @@ def get_customer(customer_number):
         )
 
 
-def main():
+def write_output(data: pd.DataFrame, directory_path: pathlib.Path, file_name: str):
+    """
+    Write a Pandas DataFrame to a csv given a path and file name
+    Args:
+        directory_path: Path to write out the file
+        file_name: Name of the file
+        data: Pandas DataFrame
+    """
+    if not isinstance(data, pd.DataFrame):
+        logging.exception("data must be a Pandas DataFrame.")
+        raise TypeError
+    data.to_csv(directory_path / file_name)
 
-    customer_consumption = multi_day(customer_number="0", days=7)
+
+def main():
+    path = pathlib.Path.cwd() / "outputs"
+    customer_consumption = multi_day(
+        customer_number="0", days=20, start_date="2020-01-01"
+    )
+    write_output(customer_consumption, path, "example.csv")
     print(customer_consumption)
 
 
