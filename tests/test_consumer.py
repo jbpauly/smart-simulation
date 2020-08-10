@@ -1,6 +1,5 @@
 import pathlib
 import random
-from collections import namedtuple
 
 import pandas as pd
 
@@ -132,7 +131,8 @@ def test_write_output():
 
     # Positive testing
     assert file.is_file()
-    file.unlink()
+    if file.is_file():
+        file.unlink()
 
     # Negative testing
     with pytest.raises(TypeError):
