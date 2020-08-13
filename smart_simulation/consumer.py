@@ -68,7 +68,7 @@ def single_day(customer_config: namedtuple, day_of_week: int):
 
     Args:
         customer_config: Configuration namedtuple
-        day: Day to generate a single day of data
+        day_of_week: Day of week as an int
 
     Returns:
         Quantity of product consumed
@@ -115,14 +115,22 @@ def multi_day(
         raise TypeError
 
     customer_config = get_customer(customer_number)
-    consumption_servings = pd.DataFrame(
-        data=np.zeros(days, dtype=int),
-        index=pd.date_range(start_date, periods=days, freq="D"),
-        columns=["servings"],
-    )
-    for day in consumption_servings.index:
+    dates = pd.date_range(start_date, periods=days, freq="D")
+    servings = np.zeros(days, dtype=int)
+    index = np.arange(days)
+    data = {"date": dates, "servings": servings}
+    consumption_servings = pd.DataFrame(data=data, index=index)
+    # consumption_servings = pd.DataFrame(
+    #     data=np.zeros(days, dtype=int),
+    #     index=pd.date_range(start_date, periods=days, freq="D"),
+    #     columns=["servings"],
+    # )
+    for index, day in enumerate(consumption_servings["date"]):
         day_of_week = day.dayofweek
-        consumption_servings["servings"][day] = single_day(customer_config, day_of_week)
+        consumption_servings.at[index, "servings"] = single_day(
+            customer_config, day_of_week
+        )
+        # consumption_servings["servings"][day] = single_day(customer_config, day_of_week)
     return consumption_servings
 
 
@@ -159,10 +167,52 @@ def write_output(data: pd.DataFrame, directory_path: pathlib.Path, file_name: st
     data.to_csv(directory_path / file_name)
 
 
+def perfect_scale(
+    data: pd.DataFrame, quantity_to_weight: tuple, stock_weight: float
+) -> pd.DataFrame:
+    """
+    Create 'perfect' scale data from a consumer's consumption behavior
+    Args:
+        quantity_to_weight: Consumer's standard serving size as a Random function and input parameters
+        stock_weight: weight of product
+        data: Consumer behavior data
+
+    Returns: Consumer behavior data with a 'weight' column of scale measurements
+
+    """
+    weights = np.zeros(len(data.index), dtype=float)
+    data["weight"] = weights
+    data.at[0, "weight"] = stock_weight
+    for time_step in range(1, len(data.index)):
+        previous_day_weight = data.at[time_step - 1, "weight"]
+        consumption_servings = data.at[time_step, "servings"]
+
+        if consumption_servings == 0:
+            data.at[time_step, "weight"] = data.at[time_step - 1, "weight"]
+
+        serving_weight = quantity_to_weight[0](*quantity_to_weight[1])
+        consumption_weight = serving_weight * consumption_servings
+
+        if previous_day_weight == 0.0:
+            previous_day_weight = stock_weight
+
+        if consumption_weight > previous_day_weight:
+            data.at[time_step, "weight"] = 0.0
+        else:
+            data.at[time_step, "weight"] = previous_day_weight - consumption_weight
+
+    return data
+
+
 def main():
     path = pathlib.Path.cwd() / "outputs"
-    customer_consumption = multi_day(
-        customer_number="0", days=20, start_date="2020-01-01"
+    customer_behavior = multi_day(
+        customer_number="0", days=365, start_date="2020-01-01"
+    )
+    customer_consumption = perfect_scale(
+        data=customer_behavior,
+        quantity_to_weight=(random.normalvariate, (0.38, 0.05)),
+        stock_weight=13,
     )
     write_output(customer_consumption, path, "example.csv")
     print(customer_consumption)

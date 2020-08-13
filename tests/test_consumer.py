@@ -143,13 +143,11 @@ def test_get_customer(monkeypatch):
         assert cs.get_customer(customer_number="not_a_customer")
 
 
-def test_write_output():
+def test_write_output(tmpdir):
     """
     Test the write_output() function of the consumer module
     """
-    from tests import test_components
-
-    test_path = pathlib.Path.cwd() / "test_components"
+    test_path = tmpdir
     test_df = pd.DataFrame()
     test_file_name = "test_write_out.csv"
     cs.write_output(test_df, test_path, test_file_name)
