@@ -161,6 +161,7 @@ def write_output(data: pd.DataFrame, directory_path: pathlib.Path, file_name: st
         file_name: Name of the file
         data: Pandas DataFrame
     """
+    file_name = file_name + ".csv"
     if not isinstance(data, pd.DataFrame):
         logging.exception("data must be a Pandas DataFrame.")
         raise TypeError

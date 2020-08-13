@@ -23,11 +23,13 @@ def main():
     pass
 
 
-@main.command
-@click.option("-c", "--customer_number", type=click.Choice(cust_templates))
+@main.command()
+@click.option("-c", "--customer_number", prompt=True, type=click.Choice(cust_templates))
 @click.option("-d", "--days", prompt=True, type=int)
 @click.option("-s", "--start_date", default="2020-01-01", prompt=True, type=str)
-@click.option("-f", "--file_name", prompt=True, type=str)
+@click.option(
+    "-f", "--file_name", prompt="File name (without file type extension)", type=str
+)
 @click.option(
     "-p", "--output_path", default=outputs_path, prompt=True, type=click.Path()
 )
