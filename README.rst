@@ -33,12 +33,8 @@ by weight measurements and monitored by Bottomless' ordering algorithm. Orders a
 expected by the customer based off their resupply preference.
 
 Data and machine learning is at the core of smart subscriptions. Starting or advancing a smart subscription business
-requires a quality dataset. There are multiple agents or factors involved with the working of smart subscriptions.
- - Customers
- - Scales
- - Product Marketplace
- - Warehouses
- - Shipping
+requires a quality dataset. There are multiple agents or factors involved with the working of smart subscriptions:
+*Customers, Scales, Product Marketplace, Warehouses, Shipping*.
 
 Examples of when the package could be used:
  - Generate a dataset to create a just-in-time ordering algorithm
@@ -53,10 +49,6 @@ Examples of when the package could be used:
     - Test ordering algorithms with unique goals
         - Maximize bundled shipments
         - Maximize attainment of order preferences
-
-
-* Free software: MIT license
-* Documentation: https://smart-simulation.readthedocs.io.
 
 
 Dependencies
