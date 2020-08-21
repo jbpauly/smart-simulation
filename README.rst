@@ -34,15 +34,15 @@ expected by the customer based off their resupply preference.
 
 Data and machine learning is at the core of smart subscriptions. Starting or advancing a smart subscription business
 requires a quality dataset. There are multiple agents or factors involved with the working of smart subscriptions.
-- Customers
-- Scales
-- Product Marketplace
-- Warehouses
-- Shipping
+ - Customers
+ - Scales
+ - Product Marketplace
+ - Warehouses
+ - Shipping
 
 Examples of when the package could be used:
-- Generate a dataset to create a just-in-time ordering algorithm
-- Explore impact of real world scenarios or changes to the underlying algorithm on a subscription service
+ - Generate a dataset to create a just-in-time ordering algorithm
+ - Explore impact of real world scenarios or changes to the underlying algorithm on a subscription service
     - Answer questions like
         - "How much will ordering accuracy decrease with a 30% reduction in USPS shipping
           estimates confidence?"
@@ -99,6 +99,7 @@ Run the Package Locally
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 **Explore CLI Options**
+
 ``smart_simulation --help``
 
 ``smart_simulation create-consumption --help`` ::
@@ -139,8 +140,9 @@ Example Use
    2,2020-01-03, 1, 12.22
    3,2020-01-04, 0, 12.22
 
+
 Road Map
-________
+--------
 
 Features
 --------
