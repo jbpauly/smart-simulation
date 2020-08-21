@@ -19,7 +19,6 @@ smart-simulation
      :alt: Updates
 
 
-
 Simulator for Smart Subscription Services.
 
 This package generates data, simulations, and counter-factual scenarios for weight-based smart subscriptions.
@@ -140,24 +139,13 @@ Example Use
    2,2020-01-03, 1, 12.22
    3,2020-01-04, 0, 12.22
 
-
-Features
---------
-
-* TODO
-
 Road Map
 ________
 
-
 Features
 --------
 
 * TODO
-
-Road Map
---------
-
 
 Credits
 -------
