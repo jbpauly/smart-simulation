@@ -120,17 +120,12 @@ def multi_day(
     index = np.arange(days)
     data = {"date": dates, "servings": servings}
     consumption_servings = pd.DataFrame(data=data, index=index)
-    # consumption_servings = pd.DataFrame(
-    #     data=np.zeros(days, dtype=int),
-    #     index=pd.date_range(start_date, periods=days, freq="D"),
-    #     columns=["servings"],
-    # )
+
     for index, day in enumerate(consumption_servings["date"]):
         day_of_week = day.dayofweek
         consumption_servings.at[index, "servings"] = single_day(
             customer_config, day_of_week
         )
-        # consumption_servings["servings"][day] = single_day(customer_config, day_of_week)
     return consumption_servings
 
 
