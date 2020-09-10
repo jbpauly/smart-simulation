@@ -62,7 +62,7 @@ def consume(random_function: random.random, function_params: tuple) -> int:
     return quantity
 
 
-def single_day(customer_config: namedtuple, day_of_week: int):
+def single_day(customer_config: namedtuple, day_of_week: int) -> int:
     """
     Generate consumption data for a customer on a single day
 
@@ -117,13 +117,12 @@ def multi_day(
     customer_config = get_customer(customer_number)
     dates = pd.date_range(start_date, periods=days, freq="D")
     servings = np.zeros(days, dtype=int)
-    index = np.arange(days)
-    data = {"date": dates, "servings": servings}
-    consumption_servings = pd.DataFrame(data=data, index=index)
+    data = {"servings": servings}
+    consumption_servings = pd.DataFrame(data=data, index=dates)
 
-    for index, day in enumerate(consumption_servings["date"]):
+    for index, day in enumerate(consumption_servings.index):
         day_of_week = day.dayofweek
-        consumption_servings.at[index, "servings"] = single_day(
+        consumption_servings.at[day, "servings"] = single_day(
             customer_config, day_of_week
         )
     return consumption_servings
@@ -205,13 +204,13 @@ def main():
     customer_behavior = multi_day(
         customer_number="0", days=365, start_date="2020-01-01"
     )
-    customer_consumption = perfect_scale(
-        data=customer_behavior,
-        quantity_to_weight=(random.normalvariate, (0.38, 0.05)),
-        stock_weight=13,
-    )
-    write_output(customer_consumption, path, "example.csv")
-    print(customer_consumption)
+    # customer_consumption = perfect_scale(
+    #     data=customer_behavior,
+    #     quantity_to_weight=(random.normalvariate, (0.38, 0.05)),
+    #     stock_weight=13,
+    # )
+    write_output(customer_behavior, path, "daily_servings")
+    # print(customer_behavior)
 
 
 if __name__ == "__main__":
