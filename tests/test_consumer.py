@@ -149,9 +149,9 @@ def test_write_output(tmpdir):
     """
     test_path = tmpdir
     test_df = pd.DataFrame()
-    test_file_name = "test_write_out.csv"
+    test_file_name = "test_write_out"
     cs.write_output(test_df, test_path, test_file_name)
-    file = pathlib.Path(test_path / test_file_name)
+    file = pathlib.Path(test_path / "test_write_out.csv")
 
     # Positive testing
     assert file.is_file()
