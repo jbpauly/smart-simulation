@@ -259,7 +259,7 @@ def main():
     weight_data = create_weight_data(upsampled_data, "Standard")
     with_calibration_error = full_change(weight_data, 10, 5, calibration_error)
     with_signal_removal = full_change(with_calibration_error, 5, 5, signal_removal)
-    consumer.write_output(with_signal_removal, path, "full_transform")
+    consumer.write_output(weight_data, path, "full_transform")
 
 
 if __name__ == "__main__":

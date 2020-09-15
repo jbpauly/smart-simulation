@@ -160,55 +160,12 @@ def write_output(data: pd.DataFrame, directory_path: pathlib.Path, file_name: st
     data.to_csv(directory_path / file_name)
 
 
-def perfect_scale(
-    data: pd.DataFrame, quantity_to_weight: tuple, stock_weight: float
-) -> pd.DataFrame:
-    """
-    Create 'perfect' scale data from a consumer's consumption behavior
-    Args:
-        quantity_to_weight: Consumer's standard serving size as a Random function and input parameters
-        stock_weight: weight of product
-        data: Consumer behavior data
-
-    Returns: Consumer behavior data with a 'weight' column of scale measurements
-
-    """
-    weights = np.zeros(len(data.index), dtype=float)
-    data["weight"] = weights
-    data.at[0, "weight"] = stock_weight
-    for time_step in range(1, len(data.index)):
-        previous_day_weight = data.at[time_step - 1, "weight"]
-        consumption_servings = data.at[time_step, "servings"]
-
-        if consumption_servings == 0:
-            data.at[time_step, "weight"] = data.at[time_step - 1, "weight"]
-
-        serving_weight = quantity_to_weight[0](*quantity_to_weight[1])
-        consumption_weight = serving_weight * consumption_servings
-
-        if previous_day_weight == 0.0:
-            previous_day_weight = stock_weight
-
-        if consumption_weight > previous_day_weight:
-            data.at[time_step, "weight"] = 0.0
-        else:
-            data.at[time_step, "weight"] = previous_day_weight - consumption_weight
-
-    return data
-
-
 def main():
     path = pathlib.Path.cwd() / "outputs"
     customer_behavior = multi_day(
         customer_number="0", days=365, start_date="2020-01-01"
     )
-    # customer_consumption = perfect_scale(
-    #     data=customer_behavior,
-    #     quantity_to_weight=(random.normalvariate, (0.38, 0.05)),
-    #     stock_weight=13,
-    # )
     write_output(customer_behavior, path, "daily_servings")
-    # print(customer_behavior)
 
 
 if __name__ == "__main__":
