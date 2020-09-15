@@ -7,7 +7,7 @@ import pandas as pd
 
 import daiquiri
 import smart_simulation.consumer as consumer
-from smart_simulation.cfg_templates import auxiliary
+from smart_simulation.cfg_templates import products
 
 daiquiri.setup(
     level=logging.INFO,
@@ -35,22 +35,24 @@ def upsample(dataset, consumption_window_template: str) -> pd.DataFrame:
 
     """
 
-    consumption_window = auxiliary.consumption_windows[consumption_window_template]
-    time_stamps = list(consumption_window.keys())
+    consumption_window = products.consumption_windows[consumption_window_template]
+    consumption_times = list(consumption_window.keys())
     weights = list(consumption_window.values())
-    frequency = pd.infer_freq(time_stamps)
+    frequency = pd.infer_freq(consumption_times)
 
     upsampled_time_stamps = pd.date_range(
-        start=dataset.index[0],
-        end=(dataset.index[-1] + pd.Timedelta("1 days") - pd.Timedelta(frequency)),
+        start=dataset.index.min(),
+        end=(dataset.index.max() + pd.Timedelta("1 days") - pd.Timedelta(frequency)),
         freq=frequency,
-    )
+    )  # To account a full day of data on the last day, extend end date by 1 day and remove 1 time stamp (midnight)
 
-    upsampled_data = pd.DataFrame(index=upsampled_time_stamps).assign(servings=0)
+    upsampled_data = pd.DataFrame({"servings": 0}, index=upsampled_time_stamps)
 
     for day in dataset.index:
         for serving in range(dataset.loc[day]["servings"]):
-            period = random.choices(population=time_stamps, weights=weights, k=1)[0]
+            period = random.choices(population=consumption_times, weights=weights, k=1)[
+                0
+            ]
             time_stamp = day + pd.to_timedelta(period)
             upsampled_data.at[time_stamp, "servings"] += 1
 
@@ -68,87 +70,116 @@ def create_weight_data(dataset: pd.DataFrame, arrival_template: str) -> pd.DataF
         Pandas DataFrame of weight measurements
 
     """
-    arrival_options = auxiliary.arrival_options[arrival_template]
-    arrival_options_weights = tuple(
-        auxiliary.arrival_options_weights[arrival_template].values()
+    arrival_options = products.arrival_options[arrival_template]
+    arrival_classifications = [*arrival_options]
+    arrival_classifications_weight = tuple(
+        products.arrival_options_weights[arrival_template].values()
     )
-    stock_weight = auxiliary.stock_weight
-    quantity_to_weight = auxiliary.quantity_to_weight
+    stock_weight = products.stock_weight
+    quantity_to_weight = products.quantity_to_weight
     data = dataset.copy()
-    data = data.assign(weight=0.0)
-    weight_col = data.columns.get_loc("weight")
-    servings_col = data.columns.get_loc("servings")
+    servings = data.servings
+    num_time_stamps = len(data.index)
+    weights = pd.Series(data=num_time_stamps * [0], dtype=float)
+    # data = data.assign(weight=0.0)
+    # weight_col = data.columns.get_loc("weight")
+    # servings_col = data.columns.get_loc("servings")
 
-    data.iat[0, weight_col] = stock_weight
+    weights.iat[0] = stock_weight
 
     time_step = 1
-    while time_step < len(data.index):
-        previous_step_weight = data.iat[time_step - 1, weight_col]
-        consumption_servings = data.iat[time_step, servings_col]
+    while time_step < weights.size:
+        previous_step_weight = weights.iat[time_step - 1]
+        consumption_servings = servings.iat[time_step]
 
         if previous_step_weight == 0.0:
-            resupply_arrival = random.choices(
-                population=[*arrival_options], weights=arrival_options_weights, k=1
+            # random.choices() returns a list of 'k' number selections, just need string value
+            resupply_classification = random.choices(
+                population=arrival_classifications,
+                weights=arrival_classifications_weight,
+                k=1,
             )[0]
-            arrival_timing = arrival_options[resupply_arrival][0](
-                *arrival_options[resupply_arrival][1]
-            )
-            time_step = time_step + arrival_timing
-            if time_step > len(data.index) + 1:
-                continue
-            if time_step < 1:
-                time_step = time_step - arrival_timing
+
+            arrival_option = arrival_options[resupply_classification]
+            rand_number_function = arrival_option[0]
+            function_inputs = arrival_option[1]
+            resupply_timing = rand_number_function(*function_inputs)
+
+            time_step = time_step + resupply_timing
+            if (
+                time_step > weights.size - 1
+            ):  # last delivery after end of time range in dataset
+                break
+
+            # Todo change to check 'previous delivery time step'
+            if time_step < 1:  # delivery must be within dataset time range
+                time_step = (
+                    time_step - resupply_timing
+                )  # reset to previous time_step and try again
                 continue
 
-            data.iat[time_step, weight_col] += stock_weight
+            weights.iat[time_step] += stock_weight
             time_step += 1
-            previous_step_weight = data.iat[time_step - 1, weight_col]
-            consumption_servings = data.iat[time_step, servings_col]
+            previous_step_weight = weights.iat[time_step - 1]
+            consumption_servings = servings.iat[time_step]
 
         if consumption_servings == 0:
-            data.iat[time_step, weight_col] = data.iat[time_step - 1, weight_col]
+            weights.iat[time_step] = weights.iat[time_step - 1]
 
         serving_weight = quantity_to_weight[0](*quantity_to_weight[1])
         consumption_weight = serving_weight * consumption_servings
 
         if consumption_weight > previous_step_weight:
-            data.iat[time_step, weight_col] = 0.0
+            weights.iat[time_step] = 0.0
         else:
-            data.iat[time_step, weight_col] = previous_step_weight - consumption_weight
+            weights.iat[time_step] = previous_step_weight - consumption_weight
 
         time_step += 1
 
+    data["weight"] = weights.to_numpy()
     return data
 
 
 def calibration_error(
     dataset: pd.DataFrame, start_time_index: int, count_time_steps: int
-):
+) -> pd.DataFrame:
     """
     Create calibration error type edits to a range of weight data
     Args:
         dataset: Dataset of weight data
         start_time_index: Index in the dataset to start the calibration error
         count_time_steps: Number of consecutive time steps to hold the calibration error
+
+    Returns:
+        A copy of dataset with calibration error
     """
-    weight_range = auxiliary.scale_calibration_error_range["Standard"]
+    data = dataset.copy()
+    weight_range = products.scale_calibration_error_range["Standard"]
     weight_delta = random.uniform(*weight_range)
     end_time_index = start_time_index + count_time_steps
-    weight_col = dataset.columns.get_loc("weight")
-    dataset.iloc[start_time_index:end_time_index, weight_col] += weight_delta
+    weight_col = data.columns.get_loc("weight")
+    data.iloc[start_time_index:end_time_index, weight_col] += weight_delta
+    return data
 
 
-def signal_removal(dataset: pd.DataFrame, start_time_index: int, count_time_steps: int):
+def signal_removal(
+    dataset: pd.DataFrame, start_time_index: int, count_time_steps: int
+) -> pd.DataFrame:
     """
     Remove weight data from a dataset to mimic expected issues like scale batteries dying, network disconnection, etc.
     Args:
         dataset: Dataset of weight data
         start_time_index: Index in the dataset to start the signal removal
         count_time_steps: Number of consecutive time steps to hold the signal removal
+
+    Returns:
+        A copy of dataset with signals removed
     """
+    data = dataset.copy()
     end_time_index = start_time_index + count_time_steps
-    weight_col = dataset.columns.get_loc("weight")
-    dataset.iloc[start_time_index:end_time_index, weight_col] = np.nan
+    weight_col = data.columns.get_loc("weight")
+    data.iloc[start_time_index:end_time_index, weight_col] = np.nan
+    return data
 
 
 def full_change(
@@ -163,7 +194,7 @@ def full_change(
         change_function: Function to change data (calibration or signal removal)
 
     Returns:
-        Pandas DataFrame of changed dataset
+        Copy of dataset with the full change
     """
     changed_data = dataset.copy()
 
@@ -208,7 +239,7 @@ def full_change(
         start_time_step = random_start.index[0]
         start_time_index = available_instances.index.get_loc(start_time_step)
 
-        change_function(*(changed_data, start_time_index, time_span))
+        changed_data = change_function(*(changed_data, start_time_index, time_span))
 
         available_instances[
             start_time_index - buffer : start_time_index + time_span + buffer
