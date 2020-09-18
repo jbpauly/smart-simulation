@@ -80,11 +80,7 @@ def create_weight_data(dataset: pd.DataFrame, arrival_template: str) -> pd.DataF
     data = dataset.copy()
     servings = data.servings
     num_time_stamps = len(data.index)
-    weights = pd.Series(data=num_time_stamps * [0], dtype=float)
-    # data = data.assign(weight=0.0)
-    # weight_col = data.columns.get_loc("weight")
-    # servings_col = data.columns.get_loc("servings")
-
+    weights = pd.Series(data=num_time_stamps * [0], index=data.index, dtype=float)
     weights.iat[0] = stock_weight
 
     time_step = 1
@@ -136,8 +132,7 @@ def create_weight_data(dataset: pd.DataFrame, arrival_template: str) -> pd.DataF
 
         time_step += 1
 
-    data["weight"] = weights.to_numpy()
-    return data
+    return weights.to_frame(name="weight")
 
 
 def calibration_error(
