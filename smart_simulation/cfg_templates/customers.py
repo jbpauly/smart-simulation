@@ -34,35 +34,3 @@ customers = {
         Sunday=DAY_PROFILE(probabilities["low"], consumption_types["high"]),
     ),
 }
-
-
-def get_consumption_types():
-    return consumption_types
-
-
-def add_consumption_type(key, function, parameters):
-    consumption_types[key : CONSUMPTION(function, parameters)]
-
-
-def delete_consumption_type(key):
-    consumption_types.pop(key)
-
-
-def get_probabilities():
-    return probabilities
-
-
-def add_probability(key, probability):
-    probabilities[key:probability]
-
-
-def get_customer_templates():
-    return customers
-
-
-def add_customer_template(key, template):
-    customers[key:template]
-
-
-def delete_customer_template(key):
-    customers.pop(key)
