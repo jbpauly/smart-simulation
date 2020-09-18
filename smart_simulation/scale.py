@@ -37,7 +37,7 @@ def upsample(dataset, consumption_window_template: str) -> pd.DataFrame:
 
     consumption_window = products.consumption_windows[consumption_window_template]
     consumption_times = list(consumption_window.keys())
-    weights = list(consumption_window.values())
+    consumption_times_probabilities = list(consumption_window.values())
     frequency = pd.infer_freq(consumption_times)
 
     upsampled_time_stamps = pd.date_range(
@@ -50,9 +50,11 @@ def upsample(dataset, consumption_window_template: str) -> pd.DataFrame:
 
     for day in dataset.index:
         for serving in range(dataset.loc[day]["servings"]):
-            period = random.choices(population=consumption_times, weights=weights, k=1)[
-                0
-            ]
+            period = random.choices(
+                population=consumption_times,
+                weights=consumption_times_probabilities,
+                k=1,
+            )[0]
             time_stamp = day + pd.to_timedelta(period)
             upsampled_data.at[time_stamp, "servings"] += 1
 
@@ -135,46 +137,26 @@ def create_weight_data(dataset: pd.DataFrame, arrival_template: str) -> pd.DataF
     return weights.to_frame(name="weight")
 
 
-def calibration_error(
-    dataset: pd.DataFrame, start_time_index: int, count_time_steps: int
-) -> pd.DataFrame:
+def calibration_error():
     """
-    Create calibration error type edits to a range of weight data
-    Args:
-        dataset: Dataset of weight data
-        start_time_index: Index in the dataset to start the calibration error
-        count_time_steps: Number of consecutive time steps to hold the calibration error
+    Generate random number to represent delta of calibration error of weight scale
 
     Returns:
-        A copy of dataset with calibration error
+        Random value within range of preset calibration errors
     """
-    data = dataset.copy()
     weight_range = products.scale_calibration_error_range["Standard"]
     weight_delta = random.uniform(*weight_range)
-    end_time_index = start_time_index + count_time_steps
-    weight_col = data.columns.get_loc("weight")
-    data.iloc[start_time_index:end_time_index, weight_col] += weight_delta
-    return data
+    return weight_delta
 
 
-def signal_removal(
-    dataset: pd.DataFrame, start_time_index: int, count_time_steps: int
-) -> pd.DataFrame:
+def signal_removal():
     """
-    Remove weight data from a dataset to mimic expected issues like scale batteries dying, network disconnection, etc.
-    Args:
-        dataset: Dataset of weight data
-        start_time_index: Index in the dataset to start the signal removal
-        count_time_steps: Number of consecutive time steps to hold the signal removal
+    Return a value to mimic removal of weight signal scenarios like network disconnection, dead battery of scale, etc.
 
     Returns:
-        A copy of dataset with signals removed
+        Numpy nan value
     """
-    data = dataset.copy()
-    end_time_index = start_time_index + count_time_steps
-    weight_col = data.columns.get_loc("weight")
-    data.iloc[start_time_index:end_time_index, weight_col] = np.nan
-    return data
+    return np.nan
 
 
 def full_change(
@@ -189,11 +171,11 @@ def full_change(
         change_function: Function to change data (calibration or signal removal)
 
     Returns:
-        Copy of dataset with the full change
+        New Pandas Dataframe of weight data after changes
     """
     changed_data = dataset.copy()
-
-    frequency = pd.infer_freq(changed_data.index)
+    new_weights = pd.Series(data=dataset["weight"], index=dataset.index)
+    frequency = pd.infer_freq(new_weights.index)
     one_day = pd.Timedelta("1 days")
     instances_per_day = one_day / frequency
     instance_max = instances_per_day * days_max
@@ -206,25 +188,22 @@ def full_change(
 
     while percent_changed < percent_to_change:
 
-        gbs = available_instances[available_instances == True].groupby(
+        groups = available_instances[available_instances == True].groupby(
             (available_instances != True).cumsum()
         )
 
-        gbs_max = gbs.size().max()  # get max group length
-
-        if (
-            gbs_max < instance_max
-        ):  # if max length < instance_max .. instances_max = max length
-            instance_max = gbs_max
+        groups_max = groups.size().max()  # get max group length
+        instance_max = max(instance_max, groups_max)
 
         time_span = random.randint(1, instance_max)  # randomly select delta time length
-
-        group_availability = gbs.size() >= time_span
+        group_availability = groups.size() >= time_span
         available_increments = group_availability[group_availability == True]
+        if len(available_increments) < 1:
+            break
 
         group_index = available_increments.sample(1).index[0]
 
-        group = gbs.get_group(group_index)
+        group = groups.get_group(group_index)
 
         if time_span == len(group):
             random_start = group
@@ -233,8 +212,9 @@ def full_change(
 
         start_time_step = random_start.index[0]
         start_time_index = available_instances.index.get_loc(start_time_step)
+        end_time_index = start_time_index + time_span
 
-        changed_data = change_function(*(changed_data, start_time_index, time_span))
+        new_weights[start_time_index:end_time_index] += change_function()
 
         available_instances[
             start_time_index - buffer : start_time_index + time_span + buffer
@@ -244,7 +224,7 @@ def full_change(
             False
         ]
 
-    return changed_data
+    return new_weights.to_frame(name="weight")
 
 
 def main():
