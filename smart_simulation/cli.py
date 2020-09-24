@@ -2,6 +2,7 @@
 import logging
 import pathlib
 import random
+from uuid import uuid4
 
 import click
 
@@ -44,17 +45,6 @@ def create_consumption(customer_number, days, start_date, file_name, output_path
         stock_weight=13,
     )
     consumer.write_output(customer_consumption, output_path, file_name)
-
-
-# TODO Create Function for multi-creation
-# Get number of customers to simulate
-#   which customer template?
-# Simulate
-#   Save multiple files
-#       1. daily servings
-#       2. upsampled servings
-#       3. weight data with 'Ideal' delivery
-#       4. weight data with 'Standard' delivery
 
 
 if __name__ == "__main__":
