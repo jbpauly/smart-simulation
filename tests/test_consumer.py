@@ -141,27 +141,3 @@ def test_get_customer(monkeypatch):
     # Negative testing
     with pytest.raises(Exception):
         assert cs.get_customer(customer_number="not_a_customer")
-
-
-def test_write_output(tmpdir):
-    """
-    Test the write_output() function of the consumer module
-    """
-    test_path = tmpdir
-    test_df = pd.DataFrame()
-    test_file_name = "test_write_out"
-    cs.write_output(test_df, test_path, test_file_name)
-    file = pathlib.Path(test_path / "test_write_out.csv")
-
-    # Positive testing
-    assert file.is_file()
-    if file.is_file():
-        file.unlink()
-
-    # Negative testing
-    with pytest.raises(TypeError):
-        assert cs.write_output(
-            test_df="not_a_df",  # must be a Pandas DataFrame
-            directory_path=test_path,
-            file_name=test_file_name,
-        )

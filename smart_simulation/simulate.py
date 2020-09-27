@@ -41,8 +41,6 @@ def batch_simulation(
     num_days,
     output_path,
 ):
-    # TODO get git commit
-    # TODO get random seed
 
     simulations_directory = outputs_path / "simulations"
     servings_directory = outputs_path / simulations_directory / "servings"
@@ -66,8 +64,9 @@ def batch_simulation(
             customer_number=customer_template, days=num_days, start_date=start_date
         )
         upsampled_servings = scale.upsample(daily_servings, upsample_template)
-        weights = scale.create_weight_data(upsampled_servings, resupply_template)
-
+        weights = scale.create_weight_data(
+            upsampled_servings, "Standard", "skew_early", "Standard", "Standard"
+        )
         daily_servings_file_name = uid + "_daily"
         upsampled_servings_file_name = uid + "_upsampled"
         weights_file_name = uid + "_weights_" + resupply_template

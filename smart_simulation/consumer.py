@@ -139,25 +139,8 @@ def get_customer(customer_number):
         return customers.customers[customer_number]
     else:
         raise Exception(
-            "Customer: "
-            + customer_number
-            + ", does not exist in the configuration file."
+            f"Customer: {customer_number}, does not exist in the configuration file."
         )
-
-
-def write_output(data: pd.DataFrame, directory_path: pathlib.Path, file_name: str):
-    """
-    Write a Pandas DataFrame to a csv given a path and file name
-    Args:
-        directory_path: Path to write out the file
-        file_name: Name of the file
-        data: Pandas DataFrame
-    """
-    file_name = file_name + ".csv"
-    if not isinstance(data, pd.DataFrame):
-        logging.exception("data must be a Pandas DataFrame.")
-        raise TypeError
-    data.to_csv(directory_path / file_name)
 
 
 def main():
@@ -165,7 +148,6 @@ def main():
     customer_behavior = multi_day(
         customer_number="0", days=365, start_date="2020-01-01"
     )
-    write_output(customer_behavior, path, "daily_servings")
 
 
 if __name__ == "__main__":
