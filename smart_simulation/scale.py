@@ -63,7 +63,7 @@ def upsample(dataset, consumption_window_template: str) -> pd.DataFrame:
     return upsampled_data
 
 
-def calculate_arrival_windows(delivery_days_max: dict, freq: str) -> dict:
+def calculate_arrival_windows(delivery_days_max: dict, freq: pd.Timedelta) -> dict:
     """
     Calculate the arrival windows in number of time stamps for early, on-time, and late deliveries
     Args:
@@ -108,8 +108,8 @@ def deliver_product(delivery_skew_probabilities: dict, arrival_windows: dict) ->
     Returns: A int representing the delta of timestamps away from true 'scale weight == zero' that a delivery arrives
 
     """
-    arrival_time_categories = [*delivery_skew_probabilities]
-    arrival_time_probabilities = tuple(delivery_skew_probabilities.values())
+    arrival_time_categories = list(delivery_skew_probabilities.keys())
+    arrival_time_probabilities = list(delivery_skew_probabilities.values())
     # random.choices() returns a list of 'k' number selections, just need string value
     arrival_time_category = random.choices(
         population=arrival_time_categories, weights=arrival_time_probabilities, k=1,
@@ -177,7 +177,8 @@ def create_weight_data(
     stock_weight = products.stock_weight[weight_template]
     quantity_to_weight = products.quantity_to_weight[quantity_weight_template]
     frequency = data.index.freq
-    arrival_windows = calculate_arrival_windows(delivery_max_days, frequency)
+    frequency_time_delta = pd.Timedelta(frequency)
+    arrival_windows = calculate_arrival_windows(delivery_max_days, frequency_time_delta)
 
     servings = data.servings
     num_time_stamps = len(data.index)
