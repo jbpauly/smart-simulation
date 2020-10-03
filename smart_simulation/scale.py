@@ -198,7 +198,9 @@ def create_weight_data(
             )
             delivery_index = time_step + delivery_time_delta
 
-            if delivery_index > weights.size - 1:
+            if (
+                delivery_index > weights.size - 2
+            ):  # account for index going out of range after resetting delivery
                 break  # last delivery after end of time range in dataset
             if (
                 delivery_index < previous_delivery_index
