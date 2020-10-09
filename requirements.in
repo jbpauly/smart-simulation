@@ -1,5 +1,10 @@
-Click==7.0.*
+click==7.1.*
 daiquiri==2.1.*
-pytest==6.0.*
+jupyterlab==2.2.*
+matplotlib==3.3.*
+numpy==1.19.*
 pandas==1.1.*
-numpy ==1.19.*
+pip-tools==5.3.*
+pytest==6.0.*
+seaborn==0.11.*
+tox==3.14.*
