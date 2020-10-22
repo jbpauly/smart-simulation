@@ -8,6 +8,8 @@ pip-tools==5.3.*
 pytest==6.0.*
 seaborn==0.11.*
 tox==3.14.*
-ruptures==1.0*
+ruptures==1.0.*
 time-window==0.1.*
 scipy==1.5.*
+scikit-learn==0.23.*
+
