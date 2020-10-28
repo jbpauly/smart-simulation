@@ -2,7 +2,6 @@
 import logging
 import pathlib
 import random
-from uuid import uuid4
 
 import click
 

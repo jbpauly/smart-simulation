@@ -112,7 +112,9 @@ def deliver_product(delivery_skew_probabilities: dict, arrival_windows: dict) ->
     arrival_time_probabilities = list(delivery_skew_probabilities.values())
     # random.choices() returns a list of 'k' number selections, just need string value
     arrival_time_category = random.choices(
-        population=arrival_time_categories, weights=arrival_time_probabilities, k=1,
+        population=arrival_time_categories,
+        weights=arrival_time_probabilities,
+        k=1,
     )[0]
     delivery_time_stamp_range = arrival_windows[arrival_time_category]
     delivery_time_delta = random.randint(*delivery_time_stamp_range)
@@ -360,7 +362,12 @@ def main():
     with_calibration_error = full_change(
         weight_data, 30, 5, calibration_error, "Standard"
     )
-    with_signal_removal = full_change(with_calibration_error, 5, 5, signal_removal,)
+    with_signal_removal = full_change(
+        with_calibration_error,
+        5,
+        5,
+        signal_removal,
+    )
     consumer.write_output(with_signal_removal, path, "full_transform")
 
 
