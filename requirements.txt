@@ -4,22 +4,44 @@
 #
 #    pip-compile requirements.in
 #
+appdirs==1.4.4            # via virtualenv
 attrs==19.3.0             # via pytest
-click==7.0                # via -r requirements.in
+babel==2.8.0              # via time-window
+certifi==2020.6.20        # via matplotlib
+click==7.1.2              # via -r requirements.in, pip-tools
+cycler==0.10.0            # via matplotlib
 daiquiri==2.1             # via -r requirements.in
-importlib-metadata==1.7.0  # via pluggy, pytest
+distlib==0.3.1            # via virtualenv
+filelock==3.0.12          # via tox, virtualenv
+importlib-metadata==1.7.0  # via pluggy, pytest, tox, virtualenv
 iniconfig==1.0.1          # via pytest
+joblib==0.17.0            # via scikit-learn
+kiwisolver==1.2.0         # via matplotlib
+matplotlib==3.3.2         # via -r requirements.in, seaborn
 more-itertools==8.4.0     # via pytest
-numpy==1.19.1             # via -r requirements.in, pandas
-packaging==20.4           # via pytest
-pandas==1.1.0            # via -r requirements.in
-pluggy==0.13.1            # via pytest
-py==1.9.0                 # via pytest
-pyparsing==2.4.7          # via packaging
+numpy==1.19.1             # via -r requirements.in, matplotlib, pandas, ruptures, scikit-learn, scipy, seaborn
+packaging==20.4           # via pytest, tox
+pandas==1.1.0             # via -r requirements.in, seaborn
+pillow==7.2.0             # via matplotlib
+pip-tools==5.3.1          # via -r requirements.in
+pluggy==0.13.1            # via pytest, tox
+py==1.9.0                 # via pytest, tox
+pyparsing==2.4.7          # via matplotlib, packaging
 pytest==6.0               # via -r requirements.in
-python-dateutil==2.8.1    # via pandas
+python-dateutil==2.8.1    # via matplotlib, pandas, time-window
 python-json-logger==0.1.11  # via daiquiri
-pytz==2020.1              # via pandas
-six==1.15.0               # via packaging, python-dateutil
-toml==0.10.1              # via pytest
+pytz==2020.1              # via babel, pandas
+ruptures==1.0.5           # via -r requirements.in
+scikit-learn==0.23.2      # via -r requirements.in
+scipy==1.5.2              # via -r requirements.in, ruptures, scikit-learn, seaborn
+seaborn==0.11.0           # via -r requirements.in
+six==1.15.0               # via cycler, packaging, pip-tools, python-dateutil, tox, virtualenv
+threadpoolctl==2.1.0      # via scikit-learn
+time-window==0.1.0        # via -r requirements.in
+toml==0.10.1              # via pytest, tox
+tox==3.14.6               # via -r requirements.in
+virtualenv==20.0.33       # via tox
 zipp==3.1.0               # via importlib-metadata
+
+# The following packages are considered to be unsafe in a requirements file:
+# pip

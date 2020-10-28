@@ -9,6 +9,9 @@ __pycache__/
 # idea folder
 .idea/
 
+# virtual documents folder
+.virtual_documents/
+
 
 # Distribution / packaging
 .Python
