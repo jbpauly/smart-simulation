@@ -5,26 +5,6 @@ import pytest
 from smart_simulation.database import db_utils as dbu
 
 
-@pytest.fixture
-def create_database():
-    """ Fixture to set up the in-memory database with test data """
-    connection = sqlite3.connect(":memory:")
-    c = connection.cursor()
-    c.execute(
-        """CREATE TABLE weights(
-            date_time text,
-            scale_id text,
-            weight real)
-            """
-    )
-    sample_data = [
-        ("2020-01-01 00:00:00", "01", 14.0),
-        ("2020-01-01 01:00:00", "01", 14.0),
-    ]
-    c.executemany("INSERT INTO weights VALUES(?, ?, ?)", sample_data)
-    return connection
-
-
 def test_connect(monkeypatch):
     """
     Test the connect function from the db_utils module
@@ -64,6 +44,24 @@ def test_connect(monkeypatch):
 
 
 # TODO write test_delete_all_rows
-# def test_delete_all_rows():
-#    # delete rows from test database
-#    # query for any existing rows
+# def test_delete_all_rows(monkeypatch):
+#
+#     dummy_db_path = pathlib.Path("/dummy.db")
+#     valid_table = "weights"
+#     invalid_table = "weights"
+#
+#     def patch_connect(*args, **kwargs):
+#         return sqlite3.Connection
+#
+#     def patch_cursor():
+#         return sqlite3.Cursor
+#
+#     def patch_execute():
+#         return None
+#
+#     monkeypatch.setattr(dbu, "connect", patch_connect)
+#     monkeypatch.setattr(sqlite3.Connection, "cursor", patch_cursor)
+#     monkeypatch.setattr(sqlite3.Cursor, "execute", patch_execute)
+#
+#     test_output = dbu.delete_all_rows(valid_table, dummy_db_path)
+#     assert test_output is None
