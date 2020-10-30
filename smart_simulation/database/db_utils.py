@@ -55,8 +55,15 @@ def weight_csv_to_db(
         truncated_uuid: 8 character long truncated uuid.
         database: Database to write to, defaulted to the local production database.
     """
-    # TODO add in check for datetime format of index, and that weight column exists
     # TODO and create temp df with just date_time, scale_id, weight
+    if not isinstance(truncated_uuid, str):
+        logging.exception("truncated_uuid must be str.")
+        raise TypeError
+
+    if len(truncated_uuid) != 8:
+        logging.exception("truncated_uuid must be 8 characters.")
+        raise ValueError
+
     with connect(database) as connection:
         scale_df = pd.read_csv(csv_file, parse_dates=True, index_col=0)
         scale_df.loc[:, "scale_id"] = truncated_uuid
