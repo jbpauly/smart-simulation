@@ -37,13 +37,22 @@ def load_sim_data(file_path: pathlib.Path, columns: list) -> pd.DataFrame:
     return sim_df
 
 
-# TODO Complete validate_data function
-# def validate_data(dataset: pd.Object, schema: pa.Schema) -> bool:
-#     try:
-#         schema(dataset)
-#     except pa.errors.SchemaErrors:
-#         raise
-#     return True
+def validate_data(
+    dataset: pd.Series or pd.DataFrame, schema: pa.DataFrameSchema or pa.SeriesSchema
+) -> bool:
+    """
+    Validate the schema of a dataset against an expected schema.
+    Args:
+        dataset: Pandas object (Series or DataFrame) to validate.
+        schema: Expected schema of the dataset.
+
+    Returns: True if dataset schema matches expected schema.
+    """
+    try:
+        schema(dataset)
+    except pa.errors.SchemaErrors:
+        raise
+    return True
 
 
 def calculate_consumption(
@@ -58,18 +67,41 @@ def calculate_consumption(
     Returns: Consumption as a Pandas Series.
     """
     weight_schema = pas.weight_series
-
     try:
-        weight_schema(weight_series)
-    except pa.errors.SchemaErrors:
-        raise
+        validate_data(weight_series, weight_schema)
+    except Exception as ec:
+        raise ec
 
     consumption = -1 * weight_series.diff().rename("consumption")
     consumption.loc[consumption == -0] = 0  # prior transform converts 0 to -0
     if adjustments is not None:
         try:
-            weight_schema(adjustments)
-        except pa.errors.SchemaErrors:
-            raise
-        consumption = consumption.add(adjustments, fill_value=0)
+            validate_data(adjustments, weight_schema)
+        except Exception as ec:
+            raise ec
+        consumption = consumption.add(adjustments, fill_value=0).rename("consumption")
     return consumption
+
+
+def consumption_daily(consumption_series: pd.Series) -> pd.Series:
+    """
+    Upsample a consumption series to a daily value and return series.
+    Args:
+        consumption_series: Consumption values as a Pandas Series.
+
+    Returns: Upsampled Pandas Series.
+    """
+    daily_consumption = consumption_series.resample("1D").sum()
+    return daily_consumption
+
+
+def eod_weights(weight_series: pd.Series) -> pd.Series:
+    """
+    Get the daily end of day weights for a weight series.
+    Args:
+        weight_series: Measured weights.
+
+    Returns: last measured weight of each day in the weight_series.
+    """
+    eod_weight_series = weight_series.groupby([weight_series.index.date]).last()
+    return eod_weight_series

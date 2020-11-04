@@ -1,8 +1,7 @@
-import matplotlib.dates as mdates
-import matplotlib.pyplot as plt
-
 import logging
 
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy import signal
@@ -332,18 +331,6 @@ def adjust_segments(consumption_segments: dict, weight_series: pd.Series) -> dic
         else:
             continue
     return segments
-
-
-def calculate_daily_consumption(consumption_series: pd.Series) -> pd.Series:
-    """
-    Upsample a consumption series to a daily value and return series.
-    Args:
-        consumption_series: Consumption values as a Pandas Series.
-
-    Returns: Upsampled Pandas Series.
-    """
-    daily_consumption = consumption_series.resample("1D").sum()
-    return daily_consumption
 
 
 def segment_consumption_stats(

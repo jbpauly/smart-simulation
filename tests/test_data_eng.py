@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 import pandera as pa
-import pytest
+# import pytest
 import pytest_mock
 from smart_simulation.cfg_templates.config import package_dir
 from smart_simulation.ds_tools import data_eng as de
@@ -27,7 +27,7 @@ def test_load_sim_data():
     assert test_output.index.dtype == np.dtype("datetime64[ns]")
 
     # Negative testing
-    with pytest.raises(Exception):
+    with pytest_mock.raises(Exception):
         assert de.load_sim_data(valid_file, invalid_columns)
 
 
@@ -74,7 +74,7 @@ def test_calculate_consumption():
     invalid_weights = pd.Series(
         weights, index=pd.to_datetime(list(weights.keys())), dtype=int, name="weight"
     )  # schema expects dtype=float for weight values
-    with pytest.raises(pa.errors.SchemaError):
+    with pytest_mock.raises(pa.errors.SchemaError):
         assert de.calculate_consumption(
             weight_series=invalid_weights, adjustments=test_adjustments
         )
