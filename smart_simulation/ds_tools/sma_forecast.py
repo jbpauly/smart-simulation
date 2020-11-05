@@ -20,14 +20,14 @@ daiquiri.setup(
 
 def create_train_test_splits(consumption_series: pd.Series, forecast_days: int) -> dict:
     """
-    Create test and train datasets for each date (d) to be used in a daily forecast.
+    Create test and train splits for each date (d) to be used in a daily forecast.
     Train = day (0) to day (d - 1)
     Test = day (d) to day (d + forecast_days - 1)
     Args:
         consumption_series: Consumption as a Pandas Series.
         forecast_days: Number of days expected to forecast on each day.
 
-    Returns: A dictionary of train and test datasets.
+    Returns: A dictionary of train and test dataset splits.
             Keys are timestamps.
             Values are a dictionary:
                 Keys: train, test
@@ -57,14 +57,14 @@ def create_train_test_splits(consumption_series: pd.Series, forecast_days: int) 
         raise ValueError
 
     forecast_dates = consumption_series.index[1 : -forecast_days + 1]
-    datasets = {}
+    splits = {}
     for d_idx, day in enumerate(forecast_dates):
         forecast_d_idx = d_idx + 1
         train = consumption_series[0:forecast_d_idx]
         test = consumption_series[forecast_d_idx : forecast_d_idx + forecast_days]
         train_test = {"train": train, "test": test}
-        datasets[day] = train_test
-    return datasets
+        splits[day] = train_test
+    return splits
 
 
 def predict(
@@ -94,34 +94,33 @@ def predict(
 
     averaging_window = str(averaging_window) + "D"
     sma = x_consumption.rolling(averaging_window, min_periods=1).mean()[-1]
-    predictions = pd.Series(sma, index=y_dates, dtype=float, name="pred")
+    predictions = pd.Series(sma, index=y_dates, dtype=float, name="consumption")
     return predictions
 
 
-def predict_all(train_test_splits_dict: dict, averaging_window: int) -> dict:
+def predict_all(train_test_splits: dict, averaging_window: int) -> dict:
     """
-    Predict consumption for all datasets in a train_test_splits_dict.
+    Predict consumption for all splits in train_test_splits.
     Args:
-        train_test_splits_dict: Dictionary of training and testing data for a given dataset.
+        train_test_splits: Dictionary of training and testing splits for a given dataset.
         averaging_window: Size of the averaging window to use for forecasting.
 
     Returns: A dictionary of predictions.
             Keys: Timestamps (date of prediction).
             Values: Forecasts a Pandas Series.
     """
-    if not isinstance(train_test_splits_dict, dict):
+    if not isinstance(train_test_splits, dict):
         logging.exception(
-            f"train_test_splits_dict must be a dictionary, received a {type(train_test_splits_dict)}"
+            f"train_test_splits must be a dictionary, received a {type(train_test_splits)}"
         )
         raise TypeError
-    predict_dates_list = list(train_test_splits_dict.keys())
     all_predictions = {}
-    for date in predict_dates_list:
-        x = train_test_splits_dict[date]["train"]
-        y_true = train_test_splits_dict[date]["test"]
+    for day, split in train_test_splits.items():
+        x = split["train"]
+        y_true = split["test"]
         y_dates = y_true.index
         y_pred = predict(averaging_window, x, y_dates)
-        all_predictions[date] = y_pred
+        all_predictions[day] = y_pred
     return all_predictions
 
 
@@ -215,7 +214,7 @@ def single_test(
     except Exception as ex:
         raise ex
 
-    data_dict = {}
+    datasets = {}
     test_dates = consumption_series_test.index
     start_weight = training_weights[-1]
     test_theoretical_weight = calculate_test_weights(
@@ -226,78 +225,84 @@ def single_test(
     pred_weight = calculate_test_weights(start_weight, pred_consumption)
     pred_binary = test_weight_binary(start_weight, pred_consumption)
 
-    data_dict["train_weight"] = training_weights
-    data_dict["train_consumption"] = consumption_series_train
-    data_dict["test_weight"] = test_theoretical_weight
-    data_dict["test_consumption"] = consumption_series_test
-    data_dict["test_binary"] = test_theoretical_binary
-    data_dict["pred_weight"] = pred_weight
-    data_dict["pred_consumption"] = pred_consumption
-    data_dict["pred_binary"] = pred_binary
+    datasets["train_weight"] = training_weights
+    datasets["train_consumption"] = consumption_series_train
+    datasets["test_weight"] = test_theoretical_weight
+    datasets["test_consumption"] = consumption_series_test
+    datasets["test_binary"] = test_theoretical_binary
+    datasets["pred_weight"] = pred_weight
+    datasets["pred_consumption"] = pred_consumption
+    datasets["pred_binary"] = pred_binary
 
-    return data_dict
+    return datasets
 
 
 def multi_test(
-    weight_series: pd.Series, train_test_dict: dict, sma_window: int
+    weight_series: pd.Series, train_test_splits: dict, sma_window: int
 ) -> dict:
     """
-    Forecast consumption for a all train/test datasets in train_test_dict.
+    Forecast consumption for a all train/test datasets in train_test_splits.
     Args:
-        weight_series: Full weight series associated with the train_test_dict.
-        train_test_dict: Dictionary of train/test datasets.
+        weight_series: Full weight series associated with the train_test_splits.
+        train_test_splits: Dictionary of train/test datasets.
         sma_window: Size of the averaging window to use for forecasting.
 
     Returns: A dictionary of sma_single_test dictionaries.
     """
-    all_tests_dict = {}
-    pred_dates = list(train_test_dict.keys())
-    for day in pred_dates:
-        day_train_test = train_test_dict[day]
-        consumption_series_train = day_train_test["train"]
-        consumption_series_test = day_train_test["test"]
+    tests = {}
+    for day, split in train_test_splits.items():
+        consumption_series_train = split["train"]
+        consumption_series_test = split["test"]
         weights_series_train = weight_series[consumption_series_train.index].copy()
-        day_pred_dict = single_test(
+        test_ouput = single_test(
             weights_series_train,
             consumption_series_train,
             consumption_series_test,
             sma_window,
         )
-        all_tests_dict[day] = day_pred_dict
+        tests[day] = test_ouput
 
-    return all_tests_dict
+    return tests
 
 
-def create_test_df(test_dict: dict, prediction_date: pd.Timestamp) -> pd.DataFrame:
+def create_test_df(test_output: dict, prediction_date: pd.Timestamp) -> pd.DataFrame:
     """
-    Create a Pandas DataFrame of test data from test_dict. Drop training data before returning DataFrame.
+    Create a Pandas DataFrame of test data from test dictionary. Drop training data before returning DataFrame.
     Args:
         prediction_date: Date of prediction.
-        test_dict: Test dict of forecast results.
+        test_output: Test dict of forecast results.
     Returns: Test data DataFrame.
     """
-    copy_dict = test_dict.copy()
-    del copy_dict["train_weight"]
-    del copy_dict["train_consumption"]
-    test_df = pd.DataFrame.from_dict(copy_dict, orient="columns")
-    test_df.loc[:, "date_of_prediction"] = prediction_date
-    test_df.index.name = "date"
-    test_df = test_df.reset_index()
-    return test_df
+    if not isinstance(test_output, dict):
+        logging.exception(
+            f"test_output must be a dictionary. Received type: {type(test_output)}"
+        )
+        raise TypeError
+    if not isinstance(prediction_date, pd.Timestamp):
+        logging.exception(
+            f"prediction_date must be of type pandas.Timestamp. Received type: {type(prediction_date)}"
+        )
+        raise TypeError
+
+    test = pd.DataFrame.from_dict(test_output, orient="columns")
+    test = test.drop(columns=["train_weight", "train_consumption"]).dropna(
+        axis=0, how="any"
+    )
+    test.loc[:, "date_of_prediction"] = prediction_date
+    test = test.reset_index().rename(columns={"index": "date"})
+    return test
 
 
-def create_all_tests_df(multi_test_dict: dict) -> pd.DataFrame:
+def create_all_tests_df(tests_by_day: dict) -> pd.DataFrame:
     """
-    Create a Pandas DataFrame of test data from all test_dicts in a multi_test_dict.
+    Create a Pandas DataFrame of test data from all test dictionaries in multi_test_outputs.
     Args:
-        multi_test_dict: Dictionary of test_dicts for all dates with predictions.
+        tests_by_day: Dictionary of test outputs for all dates with predictions.
     Returns: Test data DataFrame.
     """
-    test_dfs = {}
-    pred_dates = list(multi_test_dict.keys())
-    for day in pred_dates:
-        test_dict = multi_test_dict[day]
-        test_df = create_test_df(test_dict, day)
-        test_dfs[day] = test_df
-    all_test_df = pd.concat(test_dfs.values(), ignore_index=True)
-    return all_test_df
+    tests = {}
+    for day, test in tests_by_day.items():
+        test_df = create_test_df(test, day)
+        tests[day] = test_df
+    all_tests = pd.concat(tests.values(), ignore_index=True)
+    return all_tests

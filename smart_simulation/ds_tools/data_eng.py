@@ -48,6 +48,11 @@ def validate_data(
 
     Returns: True if dataset schema matches expected schema.
     """
+
+    if not isinstance(schema, pa.SeriesSchema or pa.DataFrameSchema):
+        logging.exception(f"schema must be a pandera schema. received a {type(schema)}")
+        raise TypeError
+
     try:
         schema(dataset)
     except pa.errors.SchemaErrors:
@@ -69,8 +74,8 @@ def calculate_consumption(
     weight_schema = pas.weight_series
     try:
         validate_data(weight_series, weight_schema)
-    except Exception as ec:
-        raise ec
+    except Exception as ex:
+        raise ex
 
     consumption = -1 * weight_series.diff().rename("consumption")
     consumption.loc[consumption == -0] = 0  # prior transform converts 0 to -0
