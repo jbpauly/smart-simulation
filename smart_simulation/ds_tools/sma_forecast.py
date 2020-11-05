@@ -36,11 +36,25 @@ def create_train_test_splits(consumption_series: pd.Series, forecast_days: int) 
     consumption_schema = pas.consumption_series
     try:
         de.validate_data(consumption_series, consumption_schema)
-    except Exception as ec:
-        raise ec
+    except Exception as ex:
+        raise ex
 
     if consumption_series.index.inferred_freq != "D":
         consumption_series = de.consumption_daily(consumption_series)
+
+    if not isinstance(forecast_days, int):
+        try:
+            forecast_days = int(forecast_days)
+        except Exception as ex:
+            raise ex
+
+    max_forecast_size = len(consumption_series) - 1
+    if forecast_days > max_forecast_size:
+        logging.exception(
+            f"forecast_days: {forecast_days}, must be atleast 1 day less than number of days in "
+            f"consumption series: {max_forecast_size}"
+        )
+        raise ValueError
 
     forecast_dates = consumption_series.index[1 : -forecast_days + 1]
     datasets = {}
@@ -66,6 +80,18 @@ def predict(
 
     Returns: Forecast of daily consumption for y_dates as a Pandas Series.
     """
+    consumption_schema = pas.consumption_series
+    try:
+        de.validate_data(x_consumption, consumption_schema)
+    except Exception as ex:
+        raise ex
+
+    if not isinstance(averaging_window, int):
+        try:
+            averaging_window = int(averaging_window)
+        except Exception as ex:
+            raise ex
+
     averaging_window = str(averaging_window) + "D"
     sma = x_consumption.rolling(averaging_window, min_periods=1).mean()[-1]
     predictions = pd.Series(sma, index=y_dates, dtype=float, name="pred")
@@ -83,6 +109,11 @@ def predict_all(train_test_splits_dict: dict, averaging_window: int) -> dict:
             Keys: Timestamps (date of prediction).
             Values: Forecasts a Pandas Series.
     """
+    if not isinstance(train_test_splits_dict, dict):
+        logging.exception(
+            f"train_test_splits_dict must be a dictionary, received a {type(train_test_splits_dict)}"
+        )
+        raise TypeError
     predict_dates_list = list(train_test_splits_dict.keys())
     all_predictions = {}
     for date in predict_dates_list:
@@ -105,6 +136,18 @@ def calculate_test_weights(
 
     Returns: Theoretical weights series.
     """
+    consumption_schema = pas.consumption_series
+    try:
+        de.validate_data(consumption_series, consumption_schema)
+    except Exception as ex:
+        raise ex
+
+    if not isinstance(start_weight, float):
+        try:
+            averaging_window = float(start_weight)
+        except Exception as ex:
+            raise ex
+
     weights = consumption_series.copy() * -1
     weights.iloc[0] += start_weight
     weights = weights.cumsum().rename("weight")
@@ -137,6 +180,12 @@ def train_weights(weight_series: pd.Series, train_dates: pd.DatetimeIndex) -> pd
 
     Returns: Subset of weights for training dates.
     """
+    weight_schema = pas.weight_series
+    try:
+        de.validate_data(weight_series, weight_schema)
+    except Exception as ex:
+        raise ex
+
     t_weights = weight_series.copy().loc[train_dates]
     return t_weights
 
@@ -160,6 +209,12 @@ def single_test(
                                     pred_weight, pred_consumption, pred_binary
 
     """
+    weight_schema = pas.weight_series
+    try:
+        de.validate_data(training_weights, weight_schema)
+    except Exception as ex:
+        raise ex
+
     data_dict = {}
     test_dates = consumption_series_test.index
     start_weight = training_weights[-1]
@@ -167,7 +222,6 @@ def single_test(
         start_weight, consumption_series_test
     )
     test_theoretical_binary = test_weight_binary(start_weight, consumption_series_test)
-
     pred_consumption = predict(sma_window, consumption_series_train, test_dates)
     pred_weight = calculate_test_weights(start_weight, pred_consumption)
     pred_binary = test_weight_binary(start_weight, pred_consumption)
