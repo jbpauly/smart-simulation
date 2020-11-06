@@ -28,12 +28,9 @@ def load_sim_data(file_path: pathlib.Path, columns: list) -> pd.DataFrame:
 
     Returns: The DataFrame.
     """
-    try:
-        sim_df = pd.read_csv(
-            file_path, names=columns, header=0, parse_dates=True, index_col=0
-        )
-    except Exception:
-        raise
+    sim_df = pd.read_csv(
+        file_path, names=columns, header=0, parse_dates=True, index_col=0
+    )
     return sim_df
 
 
@@ -45,19 +42,13 @@ def validate_data(
     Args:
         dataset: Pandas object (Series or DataFrame) to validate.
         schema: Expected schema of the dataset.
-
-    Returns: True if dataset schema matches expected schema.
     """
 
     if not isinstance(schema, pa.SeriesSchema or pa.DataFrameSchema):
-        logging.exception(f"schema must be a pandera schema. received a {type(schema)}")
+        logging.error(f"schema must be a pandera schema. received a {type(schema)}")
         raise TypeError
-
-    try:
-        schema(dataset)
-    except pa.errors.SchemaErrors:
-        raise
-    return True
+    schema(dataset)
+    return
 
 
 def calculate_consumption(
@@ -72,18 +63,12 @@ def calculate_consumption(
     Returns: Consumption as a Pandas Series.
     """
     weight_schema = pas.weight_series
-    try:
-        validate_data(weight_series, weight_schema)
-    except Exception as ex:
-        raise ex
+    validate_data(weight_series, weight_schema)
 
     consumption = -1 * weight_series.diff().rename("consumption")
     consumption.loc[consumption == -0] = 0  # prior transform converts 0 to -0
     if adjustments is not None:
-        try:
-            validate_data(adjustments, weight_schema)
-        except Exception as ec:
-            raise ec
+        validate_data(adjustments, weight_schema)
         consumption = consumption.add(adjustments, fill_value=0).rename("consumption")
     return consumption
 
@@ -96,6 +81,8 @@ def consumption_daily(consumption_series: pd.Series) -> pd.Series:
 
     Returns: Upsampled Pandas Series.
     """
+    consumption_schema = pas.consumption_series
+    validate_data(consumption_series, consumption_schema)
     daily_consumption = consumption_series.resample("1D").sum()
     return daily_consumption
 
@@ -108,5 +95,7 @@ def eod_weights(weight_series: pd.Series) -> pd.Series:
 
     Returns: last measured weight of each day in the weight_series.
     """
+    weight_schema = pas.weight_series
+    validate_data(weight_series, weight_schema)
     eod_weight_series = weight_series.groupby([weight_series.index.date]).last()
     return eod_weight_series

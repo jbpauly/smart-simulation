@@ -27,7 +27,7 @@ def write_output(data: pd.DataFrame, directory_path: pathlib.Path, file_name: st
     """
     file_name = file_name + ".csv"
     if not isinstance(data, pd.DataFrame):
-        logging.exception("data must be a Pandas DataFrame.")
+        logging.error("data must be a Pandas DataFrame.")
         raise TypeError
     data.to_csv(directory_path / file_name)
 

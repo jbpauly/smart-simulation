@@ -31,7 +31,7 @@ def weight_files(weights_directory: pathlib.PurePath = SIMULATION_WEIGHTS_PATH) 
 
     """
     if not isinstance(weights_directory, pathlib.PurePath):
-        logging.exception("weights_directory must be a pathlib Path.")
+        logging.error("weights_directory must be a pathlib Path.")
         raise TypeError
 
     weights_files_list = [p for p in weights_directory.iterdir() if p.is_file()]
@@ -50,7 +50,7 @@ def servings_files(
 
     """
     if not isinstance(servings_directory, pathlib.PurePath):
-        logging.exception("servings_directory must be a pathlib Path.")
+        logging.error("servings_directory must be a pathlib Path.")
         raise TypeError
 
     servings_files_list = [p for p in servings_directory.iterdir() if p.is_file()]
@@ -67,14 +67,14 @@ def file_uuid(file_path: pathlib.PurePath) -> str:
 
     """
     if not isinstance(file_path, pathlib.PurePath):
-        logging.exception("file_path must be a pathlib Path.")
+        logging.error("file_path must be a pathlib Path.")
         raise TypeError
     expected_uuid_len = 36
     file_name = file_path.stem
     file_name_split = file_name.split("_")
     uuid = file_name_split[0]
     if len(uuid) != expected_uuid_len:
-        logging.exception(
+        logging.error(
             f"Insufficient number of characters in the uuid: {uuid}. Expected length: "
             f"{expected_uuid_len}. Given length: {len(uuid)}"
         )
@@ -93,7 +93,7 @@ def truncate_uuid(uuid: str) -> str:
     """
     expected_uuid_len = 36
     if len(uuid) != expected_uuid_len:
-        logging.exception(
+        logging.error(
             f"Insufficient number of characters in the uuid: {uuid}. Expected length: "
             f"{expected_uuid_len}. Given length: {len(uuid)}"
         )

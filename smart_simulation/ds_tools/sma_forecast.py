@@ -34,24 +34,17 @@ def create_train_test_splits(consumption_series: pd.Series, forecast_days: int) 
                 Values: train consumption series, test consumption series
     """
     consumption_schema = pas.consumption_series
-    try:
-        de.validate_data(consumption_series, consumption_schema)
-    except Exception as ex:
-        raise ex
+    de.validate_data(consumption_series, consumption_schema)
 
-    if consumption_series.index.inferred_freq != "D":
+    forecast_days = int(forecast_days)
+
+    if consumption_series.index.inferred_freq != "1D":
         consumption_series = de.consumption_daily(consumption_series)
-
-    if not isinstance(forecast_days, int):
-        try:
-            forecast_days = int(forecast_days)
-        except Exception as ex:
-            raise ex
 
     max_forecast_size = len(consumption_series) - 1
     if forecast_days > max_forecast_size:
-        logging.exception(
-            f"forecast_days: {forecast_days}, must be atleast 1 day less than number of days in "
+        logging.error(
+            f"forecast_days: {forecast_days}, must be at least 1 day less than number of days in "
             f"consumption series: {max_forecast_size}"
         )
         raise ValueError
@@ -81,16 +74,8 @@ def predict(
     Returns: Forecast of daily consumption for y_dates as a Pandas Series.
     """
     consumption_schema = pas.consumption_series
-    try:
-        de.validate_data(x_consumption, consumption_schema)
-    except Exception as ex:
-        raise ex
-
-    if not isinstance(averaging_window, int):
-        try:
-            averaging_window = int(averaging_window)
-        except Exception as ex:
-            raise ex
+    de.validate_data(x_consumption, consumption_schema)
+    averaging_window = int(averaging_window)
 
     averaging_window = str(averaging_window) + "D"
     sma = x_consumption.rolling(averaging_window, min_periods=1).mean()[-1]
@@ -110,7 +95,7 @@ def predict_all(train_test_splits: dict, averaging_window: int) -> dict:
             Values: Forecasts a Pandas Series.
     """
     if not isinstance(train_test_splits, dict):
-        logging.exception(
+        logging.error(
             f"train_test_splits must be a dictionary, received a {type(train_test_splits)}"
         )
         raise TypeError
@@ -136,16 +121,8 @@ def calculate_test_weights(
     Returns: Theoretical weights series.
     """
     consumption_schema = pas.consumption_series
-    try:
-        de.validate_data(consumption_series, consumption_schema)
-    except Exception as ex:
-        raise ex
-
-    if not isinstance(start_weight, float):
-        try:
-            averaging_window = float(start_weight)
-        except Exception as ex:
-            raise ex
+    de.validate_data(consumption_series, consumption_schema)
+    start_weight = float(start_weight)
 
     weights = consumption_series.copy() * -1
     weights.iloc[0] += start_weight
@@ -180,13 +157,10 @@ def train_weights(weight_series: pd.Series, train_dates: pd.DatetimeIndex) -> pd
     Returns: Subset of weights for training dates.
     """
     weight_schema = pas.weight_series
-    try:
-        de.validate_data(weight_series, weight_schema)
-    except Exception as ex:
-        raise ex
+    de.validate_data(weight_series, weight_schema)
 
-    t_weights = weight_series.copy().loc[train_dates]
-    return t_weights
+    weights = weight_series.copy().loc[train_dates]
+    return weights
 
 
 def single_test(
@@ -209,10 +183,7 @@ def single_test(
 
     """
     weight_schema = pas.weight_series
-    try:
-        de.validate_data(training_weights, weight_schema)
-    except Exception as ex:
-        raise ex
+    de.validate_data(training_weights, weight_schema)
 
     datasets = {}
     test_dates = consumption_series_test.index
@@ -274,12 +245,12 @@ def create_test_df(test_output: dict, prediction_date: pd.Timestamp) -> pd.DataF
     Returns: Test data DataFrame.
     """
     if not isinstance(test_output, dict):
-        logging.exception(
+        logging.error(
             f"test_output must be a dictionary. Received type: {type(test_output)}"
         )
         raise TypeError
     if not isinstance(prediction_date, pd.Timestamp):
-        logging.exception(
+        logging.error(
             f"prediction_date must be of type pandas.Timestamp. Received type: {type(prediction_date)}"
         )
         raise TypeError

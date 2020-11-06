@@ -33,7 +33,7 @@ def decide(probability: float) -> bool:
 
     """
     if probability < 0 or probability > 1:
-        logging.exception("Probability is an invalid number. Check configuration.")
+        logging.error("Probability is an invalid number. Check configuration.")
         raise ValueError
     chance = random.random()
     return chance < probability
@@ -53,7 +53,7 @@ def consume(random_function: random.random, function_params: tuple) -> int:
     try:
         quantity = random_function(*function_params)
     except TypeError:
-        logging.exception(
+        logging.error(
             "function_params are invalid inputs for random_function. Check configurations."
         )
         raise
@@ -75,10 +75,10 @@ def single_day(customer_config: namedtuple, day_of_week: int) -> int:
     """
 
     if not isinstance(day_of_week, int):
-        logging.exception("day must be an int.")
+        logging.error("day must be an int.")
         raise TypeError
     if day_of_week < 0 or day_of_week > 6:
-        logging.exception("day_of_week must be an int in the range 0-6, inclusive.")
+        logging.error("day_of_week must be an int in the range 0-6, inclusive.")
         raise ValueError
 
     day_profile = customer_config[day_of_week]
@@ -105,11 +105,11 @@ def multi_day(
         A Pandas DataFrame of product consumption in units of serving
     """
     if not isinstance(customer_number, str):
-        logging.exception("customer_number must be a string.")
+        logging.error("customer_number must be a string.")
         raise TypeError
 
     if not isinstance(days, int):
-        logging.exception("days must be an int.")
+        logging.error("days must be an int.")
         raise TypeError
 
     customer_config = get_customer(customer_number)

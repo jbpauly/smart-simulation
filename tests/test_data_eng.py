@@ -43,19 +43,24 @@ def test_validate_data():
     mismatched_schema = ps.weight_series
 
     # Positive testing
-    assert de.validate_data(series, matching_schema)
-    with pytest.raises(pa.errors.SchemaError):
-        assert de.validate_data(series, mismatched_schema)
+    assert de.validate_data(series, matching_schema) is None
 
     # Negative testing
+    with pytest.raises(pa.errors.SchemaError):
+        assert de.validate_data(series, mismatched_schema)
     with pytest.raises(TypeError):
         assert de.validate_data(series, "not a schema")
 
 
-def test_calculate_consumption():
+def test_calculate_consumption(mocker):
     """
     Test calculate_consumption function from the data_eng module.
+        Args:
+            mocker: object used to patch outside function calls.
     """
+    mocker.patch.object(
+        de, "validate_data", return_value=None
+    )  # assume dataset is valid
     dates = pd.date_range(start="2020-01-01", periods=4, freq="1D")
     weights = [3, 2, 1, 3]
     consumption = [np.NAN, 1, 1, 1]
@@ -87,10 +92,15 @@ def test_calculate_consumption():
         )
 
 
-def test_consumption_daily():
+def test_consumption_daily(mocker):
     """
     Test consumption_daily function from data_eng module
+        Args:
+            mocker: object used to patch outside function calls.
     """
+    mocker.patch.object(
+        de, "validate_data", return_value=None
+    )  # assume dataset is valid
     dates_12h = pd.date_range(start="2020-01-01", end="2020-01-02", freq="12h")
     dates_1d = pd.date_range(start="2020-01-01", end="2020-01-02", freq="1D")
     consumption_12h = [1, 1, 1]
@@ -106,10 +116,15 @@ def test_consumption_daily():
     assert de.consumption_daily(consumption_series_12h).equals(consumption_series_1d)
 
 
-def test_eod_weights():
+def test_eod_weights(mocker):
     """
     Test eod_weights function from data_eng module
+        Args:
+            mocker: object used to patch outside function calls.
     """
+    mocker.patch.object(
+        de, "validate_data", return_value=None
+    )  # assume dataset is valid
     dates_12h = pd.date_range(start="2020-01-01", end="2020-01-02", freq="12h")
     dates_1d = pd.date_range(start="2020-01-01", end="2020-01-02", freq="1d")
     weights = [1, 2, 3]

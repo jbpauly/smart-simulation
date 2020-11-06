@@ -363,7 +363,7 @@ def segment_consumption_stats(
         segments_stats_dict[segment.Index] = segment_stats.to_dict()
     stats_df = pd.DataFrame.from_dict(segments_stats_dict).T
     segments_stats = pd.concat([segments_data, stats_df], axis=1)
-    segments_stats = segments_stats.drop(columns="count")
+    segments_stats = segments_stats.drop(columns=["count", "time_window"])
 
     return segments_stats
 

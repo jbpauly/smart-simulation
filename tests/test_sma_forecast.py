@@ -31,7 +31,7 @@ def test_create_train_test_splits(mocker):
     forecast_size = 2
     num_pred_dates = len(CONSUMPTION_SERIES) - forecast_size
     mocker.patch.object(
-        de, "validate_data", return_value=True
+        de, "validate_data", return_value=None
     )  # assume that dataset is valid
 
     # call on function here
@@ -54,7 +54,7 @@ def test_create_train_test_splits(mocker):
     # Negative testing
 
     # expect forecast days to be an integer
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         assert sma.create_train_test_splits(CONSUMPTION_SERIES, forecast_days="7D")
 
     # forecast_days needs to be at least 1 day less than the number of days in the consumption series
@@ -70,8 +70,8 @@ def test_predict(mocker):
         mocker: object used to patch outside function calls.
     """
     mocker.patch.object(
-        de, "validate_data", return_value=True
-    )  # assume dataset is true
+        de, "validate_data", return_value=None
+    )  # assume dataset is valid
     averaging_window = 2
     avg = statistics.mean(CONSUMPTION[4 - averaging_window : 4])
     x_consumption = CONSUMPTION_SERIES[:4]
@@ -84,10 +84,15 @@ def test_predict(mocker):
     assert predictions.index.equals(y_dates)
     # sma forecast the the sma average on the day before prediction and held constant through all forecasted days
     assert predictions[0] == avg
+    # string '2' should be successfully cast to an integer
+    assert (
+        sma.predict(averaging_window="2", x_consumption=x_consumption, y_dates=y_dates)
+        is not None
+    )
 
     # Negative testing
     # expect an integer for averaging_window
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         assert sma.predict(
             averaging_window="2D", x_consumption=x_consumption, y_dates=y_dates
         )
@@ -127,7 +132,7 @@ def test_calculate_test_weights(mocker):
         mocker: object used to patch outside function calls.
     """
     mocker.patch.object(
-        de, "validate_data", return_value=True
+        de, "validate_data", return_value=None
     )  # assume dataset is valid
     start_weight = float(10)
     theoretical_weights = [10, 9, 9, 8, 7, 6, 6, 6, 5, 4]
@@ -140,13 +145,13 @@ def test_calculate_test_weights(mocker):
 
     # Positive testing
     assert test_weights.equals(valid_test_weights)
-
-    # TODO fix assert with non float
-    # assert sma.calculate_test_weights(int(10), CONSUMPTION_SERIES)  # int should be successfully converted to integer
+    assert (
+        sma.calculate_test_weights(int(10), CONSUMPTION_SERIES) is not None
+    )  # int should be successfully converted to integer
 
     # Negative testing
     # expect a float object for start_weight
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         assert sma.calculate_test_weights(
             start_weight="not a float", consumption_series=CONSUMPTION_SERIES
         )
@@ -188,7 +193,7 @@ def test_train_weights(mocker):
         mocker: object used to patch outside function calls.
     """
     mocker.patch.object(
-        de, "validate_data", return_value=True
+        de, "validate_data", return_value=None
     )  # assume dataset is valid
     weight_series = WEIGHT_SERIES
     dates = DATES[2:]
@@ -212,7 +217,7 @@ def test_single_test(mocker):
     consumption_series_train = CONSUMPTION_SERIES[:size_train]
     consumption_series_test = CONSUMPTION_SERIES[size_train:]
     mocker.patch.object(
-        de, "validate_data", return_value=True
+        de, "validate_data", return_value=None
     )  # assume dataset is valid
     mocker.patch.object(
         sma, "calculate_test_weights", return_value="a"
@@ -291,7 +296,7 @@ def test_create_test_df():
     assert list(test_df.columns) == ["date", "pred", "test", "date_of_prediction"]
     # index should be sequential integers
     assert list(test_df.index.values) == [0, 1]
-    # date column should have values of the dates of datesets in the output dictionary
+    # date column should have values of the dates of datetimeindex of the series in the output dictionary
     assert list(test_df.date.values) == list(dates.values)
 
     # Negative testing
