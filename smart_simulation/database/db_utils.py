@@ -33,16 +33,14 @@ def connect(database: pathlib.PurePath = LOCAL_PROD_DB) -> sqlite3.connect:
     Returns: The database connection
     """
     if not isinstance(database, pathlib.PurePath):
-        logging.exception("weights_directory must be a pathlib Path.")
+        logging.error("weights_directory must be a pathlib Path.")
         raise TypeError
     if database.suffix != ".db":
-        logging.exception(f"Database: {database}, must be of extension type '.db'.")
+        logging.error(f"Database: {database}, must be of extension type '.db'.")
         raise TypeError
-    try:
-        connection = sqlite3.connect(database)
-        return connection
-    except Exception:
-        raise
+
+    connection = sqlite3.connect(database)
+    return connection
 
 
 def weight_csv_to_db(
@@ -57,11 +55,11 @@ def weight_csv_to_db(
     """
     # TODO and create temp df with just date_time, scale_id, weight
     if not isinstance(truncated_uuid, str):
-        logging.exception("truncated_uuid must be str.")
+        logging.error("truncated_uuid must be str.")
         raise TypeError
 
     if len(truncated_uuid) != 8:
-        logging.exception("truncated_uuid must be 8 characters.")
+        logging.error("truncated_uuid must be 8 characters.")
         raise ValueError
 
     with connect(database) as connection:
@@ -85,13 +83,11 @@ def delete_all_rows(table: str, database: pathlib.PurePath = LOCAL_PROD_DB):
         database: Database to delete records from, defaulted to the local production database.
     """
     if not isinstance(table, str):
-        logging.exception(f"table must be of type: str. Received a {type(table)}.")
+        logging.error(f"table must be of type: str. Received a {type(table)}.")
         raise TypeError
 
     with connect(database) as connection:
         c = connection.cursor()
         sql_statement = f"DELETE FROM {table};"
-        try:
-            c.execute(sql_statement,)
-        except Exception:
-            raise
+        c.execute(sql_statement,)
+    return

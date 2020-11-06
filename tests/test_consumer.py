@@ -1,7 +1,4 @@
-import pathlib
 import random
-
-import pandas as pd
 
 import pytest
 import smart_simulation.consumer as cs

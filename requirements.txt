@@ -19,9 +19,11 @@ joblib==0.17.0            # via scikit-learn
 kiwisolver==1.2.0         # via matplotlib
 matplotlib==3.3.2         # via -r requirements.in, seaborn
 more-itertools==8.4.0     # via pytest
-numpy==1.19.1             # via -r requirements.in, matplotlib, pandas, ruptures, scikit-learn, scipy, seaborn
+mypy-extensions==0.4.3    # via typing-inspect
+numpy==1.19.1             # via -r requirements.in, matplotlib, pandas, pandera, ruptures, scikit-learn, scipy, seaborn
 packaging==20.4           # via pytest, tox
-pandas==1.1.0             # via -r requirements.in, seaborn
+pandas==1.1.0             # via -r requirements.in, pandera, seaborn
+pandera==0.5.0            # via -r requirements.in
 pillow==7.2.0             # via matplotlib
 pip-tools==5.3.1          # via -r requirements.in
 pluggy==0.13.1            # via pytest, tox
@@ -41,7 +43,10 @@ threadpoolctl==2.1.0      # via scikit-learn
 time-window==0.1.0        # via -r requirements.in
 toml==0.10.1              # via pytest, tox
 tox==3.14.6               # via -r requirements.in
+typing-extensions==3.7.4.3  # via pandera, typing-inspect
+typing-inspect==0.6.0     # via pandera
 virtualenv==20.0.33       # via tox
+wrapt==1.12.1             # via pandera
 zipp==3.1.0               # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
