@@ -49,7 +49,7 @@ def test_validate_data():
     with pytest.raises(pa.errors.SchemaError):
         assert de.validate_data(series, mismatched_schema)
     with pytest.raises(TypeError):
-        assert de.validate_data(series, "not a schema")
+        assert de.validate_data(series, "not a schema") is not None
 
 
 def test_calculate_consumption(mocker):
@@ -81,15 +81,6 @@ def test_calculate_consumption(mocker):
         consumption, index=dates, dtype=float, name="consumption",
     )
     assert test_consumption.equals(valid_consumption)
-
-    # Negative testing
-    invalid_weights = pd.Series(
-        weights, index=dates, dtype=int, name="weight"
-    )  # schema expects dtype=float for weight values
-    with pytest.raises(pa.errors.SchemaError):
-        assert de.calculate_consumption(
-            weight_series=invalid_weights, adjustments=test_adjustments
-        )
 
 
 def test_consumption_daily(mocker):
