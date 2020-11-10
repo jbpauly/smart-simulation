@@ -82,8 +82,10 @@ def single_day(customer_config: namedtuple, day_of_week: int) -> int:
         raise ValueError
 
     day_profile = customer_config[day_of_week]
-    decision_probability = day_profile.probability
-    consumption_profile = day_profile.consumption
+    # decision_probability = day_profile.probability
+    # consumption_profile = day_profile.consumption
+    decision_probability = customers.probabilities[day_profile.probability]
+    consumption_profile = customers.consumption_types[day_profile.consumption]
     quantity = 0
     if decide(decision_probability):
         quantity = consume(consumption_profile.function, consumption_profile.parameters)

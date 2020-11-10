@@ -65,7 +65,7 @@ def calculate_consumption(
     weight_schema = pas.weight_series
     validate_data(weight_series, weight_schema)
 
-    consumption = -1 * weight_series.diff().rename("consumption")
+    consumption = -1 * weight_series.diff().rename("consumption").fillna(0)
     consumption.loc[consumption == -0] = 0  # prior transform converts 0 to -0
     if adjustments is not None:
         validate_data(adjustments, weight_schema)

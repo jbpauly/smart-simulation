@@ -420,6 +420,7 @@ def linear_weights(
         end_weight = max(end_weight, min_weight)
         weights.loc[day] = end_weight
         yesterday_weight = end_weight
+    weights = weights.round(2)
     return weights
 
 
