@@ -63,7 +63,7 @@ def test_calculate_consumption(mocker):
     )  # assume dataset is valid
     dates = pd.date_range(start="2020-01-01", periods=4, freq="1D")
     weights = [3, 2, 1, 3]
-    consumption = [np.NAN, 1, 1, 1]
+    consumption = [0, 1, 1, 1]
     adjustments = [3]
     adjustment_dates = [pd.Timestamp("2020-01-04")]
 

@@ -17,7 +17,7 @@ st.markdown(setup_file, unsafe_allow_html=True)
 
 
 probabilities = util.create_probabilities_df()
-st.write(probabilities.style.format("{:.2}"))
+st.table(probabilities.style.format("{:.2}"))
 consumption_types = util.create_consumption_types_df()
 st.write(consumption_types)
 

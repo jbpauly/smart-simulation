@@ -15,12 +15,12 @@ probabilities = {"low": 0.1, "high": 0.9}
 
 customers = {
     "test": CUSTOMER(
-        Monday=DAY_PROFILE(probabilities["high"], consumption_types["low"]),
-        Tuesday=DAY_PROFILE(probabilities["high"], consumption_types["low"]),
-        Wednesday=DAY_PROFILE(probabilities["high"], consumption_types["low"]),
-        Thursday=DAY_PROFILE(probabilities["high"], consumption_types["low"]),
-        Friday=DAY_PROFILE(probabilities["high"], consumption_types["low"]),
-        Saturday=DAY_PROFILE(probabilities["low"], consumption_types["high"]),
-        Sunday=DAY_PROFILE(probabilities["low"], consumption_types["low"]),
-    )
+        Monday=DAY_PROFILE("high", "low"),
+        Tuesday=DAY_PROFILE("high", "low"),
+        Wednesday=DAY_PROFILE("high", "low"),
+        Thursday=DAY_PROFILE("high", "low"),
+        Friday=DAY_PROFILE("high", "low"),
+        Saturday=DAY_PROFILE("low", "high"),
+        Sunday=DAY_PROFILE("low", "low"),
+    ),
 }
