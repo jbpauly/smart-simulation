@@ -41,7 +41,6 @@ def create_servings_fig(dataset: pd.DataFrame) -> go.Figure:
     quarter_index = int(len(x) / 4)
     last_quarter = [str(x[-quarter_index]), str(x[-1])]
     start_end = [str(x[0]), str(x[-1])]
-
     data = []
     for consumer in dataset.columns:
         y = list(dataset[consumer])
@@ -57,9 +56,10 @@ def create_servings_fig(dataset: pd.DataFrame) -> go.Figure:
             range=last_quarter,
             rangeslider=range_slider,
             type="date",
+            tickformat="%a %b-%d<br>%Y",
         ),
         yaxis=dict(title=dict(text="Servings (count)")),
-        title=dict(text="Cutomer Desired Servings", xanchor="center", yanchor="top"),
+        title=dict(text="Desired Consumption", xanchor="center", yanchor="top", x=0.5),
     )
     fig = go.Figure(dict(data=data, layout=fig_layout))
     return fig
@@ -180,11 +180,14 @@ def create_single_subscription_fig(dataset: pd.DataFrame) -> go.Figure:
             name="Excess",
         )
     )
-    fig.update_yaxes(title_text="Weight (oz)")
+
     layout = LAYOUT
-    layout["title"] = dict(text="Subscription Utility")
+    layout["title"] = dict(
+        text="Subscription Performance", xanchor="center", yanchor="top", x=0.5
+    )
     layout["legend_title_text"] = "Coffee Availability"
     layout["yaxis_title"] = "Weight (oz)"
     layout["xaxis_title"] = "Date"
+    layout["xaxis_tickformat"] = "%a %b-%d<br>%Y"
     fig.layout = layout
     return fig

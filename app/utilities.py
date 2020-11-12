@@ -3,6 +3,7 @@ from os.path import abspath, dirname
 
 import pandas as pd
 
+import streamlit as st
 from smart_simulation import consumer as con
 from smart_simulation.cfg_templates import customers as cm_templates
 from smart_simulation.cfg_templates import products
@@ -18,10 +19,12 @@ consumption_probability_templates = cm_templates.probabilities
 customer_templates = cm_templates.customers
 
 
+@st.cache(suppress_st_warning=True)
 def read_markdown_file(file):
     return (writing_path / file).read_text()
 
 
+@st.cache(suppress_st_warning=True)
 def create_consumption_types_df(
     template: dict = consumption_type_templates,
 ) -> pd.DataFrame:
@@ -35,6 +38,7 @@ def create_consumption_types_df(
     return types_df
 
 
+@st.cache(suppress_st_warning=True)
 def create_probabilities_df(
     template: dict = consumption_probability_templates,
 ) -> pd.DataFrame:
@@ -44,6 +48,7 @@ def create_probabilities_df(
     return probabilities
 
 
+@st.cache(suppress_st_warning=True)
 def create_customers_df(template: dict = customer_templates) -> pd.DataFrame:
     customers_dict = {}
     for customer, week in template.items():
@@ -60,7 +65,7 @@ def create_customers_df(template: dict = customer_templates) -> pd.DataFrame:
     return customers_df
 
 
-# @st.cache
+@st.cache(suppress_st_warning=True)
 def create_desired_servings_df(
     customer_numbers: list = list(customer_templates.keys()),
     days: int = 365,
@@ -75,7 +80,7 @@ def create_desired_servings_df(
     return customers_df
 
 
-# @st.cache
+@st.cache(suppress_st_warning=True)
 def create_linear_subscription_data(desired_servings: pd.DataFrame, durations: list):
     bag_weight = float(12)
     all_subs_all_consumers = {}
