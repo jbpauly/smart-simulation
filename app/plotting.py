@@ -183,7 +183,7 @@ def create_single_subscription_fig(dataset: pd.DataFrame) -> go.Figure:
 
     layout = LAYOUT
     layout["title"] = dict(
-        text="Subscription Performance", xanchor="center", yanchor="top", x=0.5
+        text="Consumer's Stock of Coffee", xanchor="center", yanchor="top", x=0.5
     )
     layout["legend_title_text"] = "Coffee Availability"
     layout["yaxis_title"] = "Weight (oz)"

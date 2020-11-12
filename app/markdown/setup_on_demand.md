@@ -1,8 +1,9 @@
 Streaming subscriptions are elegantly on-demand: demand once and consume when desired.
 Netflix is just one click away, whether or not you feel like binging a few episodes tonight.
 
-In the world of bits, supply can be endless.
-In the world of atoms, supply is scarce. It spoils. It takes up physical space.
+In the world of bits, supply can be endless and reused from user to user.
+In the world of atoms, supply is scarce. It spoils, it takes up physical space,
+and it can only be consumed once.
 Compromise is required to be on-demand.
 
 1. Compromise supply with a subscription
