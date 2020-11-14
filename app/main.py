@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from PIL import Image
+
 import streamlit as st
 from app import plotting as pl
 from app import utilities as util
@@ -30,10 +32,11 @@ with st.sidebar.beta_expander("Try out a Smart Subscription"):
     st.markdown(
         """
     If you enjoy high quality coffee, I recommend Bottomless!
-    Your second bag is on the house if you use a [referral](https://www.bottomless.com/referral/9qcbu1og).
+    Your second bag is on the house with a [referral](https://www.bottomless.com/referral/9qcbu1og).
     """,
         unsafe_allow_html=True,
     )
+    st.markdown("![Alt Text](https://media.giphy.com/media/dGhlifOCTtSdW/giphy.gif)")
 
 
 if sb_problem_introduction_checkbox:
@@ -132,12 +135,19 @@ if sb_standard_subscription_analysis_checkbox:
             "setup_standard_sub_closeout.md"
         )
         st.markdown(close_standard_sub_file, unsafe_allow_html=True)
-        st.markdown(
-            """
-        **IF you're still not convinced about your own inconsistencies in consumption, take a look at mine.**
-        # TODO: DISPLAY CONSUMPTION HEATMAP
-        """
+        heat_map_col, dist_plot_col = st.beta_columns((3, 1))
+        consumption_heatmap = Image.open("figures/bottomless_consumption.png")
+        heat_map_col.image(
+            consumption_heatmap,
+            caption="A Wildly Inconsistent 2020. Fitting, right?",
+            use_column_width=True,
         )
+        consumption_dist = Image.open("figures/personal_order_dist.png")
+        dist_plot_col.image(
+            consumption_dist, use_column_width=True,
+        )
+
+
 if sb_on_demand_consumption_checkbox:
     st.markdown(
         """

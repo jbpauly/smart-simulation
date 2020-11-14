@@ -78,6 +78,8 @@ target/
 # Jupyter Notebook
 .ipynb_checkpoints
 playground.ipynb
+.sandbox/
+
 
 # sqlite databases
 .db
@@ -114,3 +116,4 @@ ENV/
 
 # IDE settings
 .vscode/
+/smart_simulation/Notebooks/sandbox/

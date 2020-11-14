@@ -1,6 +1,7 @@
 import logging
 import pathlib
 
+import numpy as np
 import pandas as pd
 
 import daiquiri
@@ -97,5 +98,37 @@ def eod_weights(weight_series: pd.Series) -> pd.Series:
     """
     weight_schema = pas.weight_series
     validate_data(weight_series, weight_schema)
-    eod_weight_series = weight_series.groupby([weight_series.index.date]).last()
+    eod_weight_series = weight_series.resample("1D").last()
     return eod_weight_series
+
+
+def residual_days(consumption_series: pd.Series, residual_weight: float = 0.0):
+    start_timestamp = consumption_series.index[0]
+    consumption_cumsum = (
+        consumption_series.cumsum() - consumption_series.values[0]
+    )  # remove consumption incurred before timestamp 0
+    threshold_crossed = consumption_cumsum.ge(
+        residual_weight
+    )  # boolean array, True where cumsum >= residual weight
+    if True in threshold_crossed.values:
+        residual_end_timestamp = consumption_cumsum[threshold_crossed].index[
+            0
+        ]  # first True case
+        days_remaining = pd.Timedelta(
+            residual_end_timestamp - start_timestamp
+        ) / pd.Timedelta("1D")
+    else:
+        days_remaining = np.nan
+    return days_remaining
+
+
+def all_residual_days(weights_consumption: pd.DataFrame, threshold: float = 0):
+    dates_index = weights_consumption.index
+    remaining_days = pd.Series(
+        data=0, index=dates_index, dtype=float, name="residual_days"
+    )
+    for day in dates_index:
+        consumption = weights_consumption.consumption[day:]
+        residual_weight = weights_consumption.weight[day] - threshold
+        remaining_days[day] = residual_days(consumption, residual_weight)
+    return remaining_days

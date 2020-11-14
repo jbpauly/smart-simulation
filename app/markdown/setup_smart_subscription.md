@@ -1,21 +1,21 @@
 #### What is a Smart Subscription?
 
-Paul Graham has a simple description for smart subscriptions.
-> "Smart subscriptions are like streaming for stuff."
+Simply put Paul Graham, "[it's] like streaming for stuff." More on the [it] later.
 
 The differentiation between digital and physical streaming lies in the balance of supply and demand.
 All parties can be happy with over-supply in the digital world.
 In the physical world, a much tighter balance is required, and only achieved with just-in-time delivery.
-Subscribers receive their goods resupply just before they run out, but on an as needed basis.
+Subscribers receive their goods resupply just before they run out on an as needed basis.
 This meets the constant supply criteria for on-demand consumption, and minimizes expensive and wasteful oversupply.
 
 #### How does a Smart Subscription Work?
 
 Bottomless is the first of its kind smart subscription company.
-Currently, they provide subscriptions for premium coffee from the best roaster across the country.
-To achieve just-in-time delivery, Bottomless provides subscribers a wifi connected kitchen scale,
-and monitors consumption.
-The consumption data is the critical component to used to balance supply and demand.
+In fact, the company was the subject of Paul Gramham's streaming epiphany.
+They provide smart subscriptions for premium coffee from top roaster across the country.
+To achieve just-in-time delivery, Bottomless provides subscribers a wifi connected kitchen scale and monitors
+ their consumption.
+The consumption, as a way of weight, data is the critical component used to balance supply and demand.
 
 The Bottomless cofounders, Michael and Liana, view every major problem as a legibility problem.
 In an interview with Patrick O'Shaughnessy, Michael describes the importance of information legibility:
