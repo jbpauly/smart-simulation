@@ -102,7 +102,72 @@ def eod_weights(weight_series: pd.Series) -> pd.Series:
     return eod_weight_series
 
 
-def residual_days(consumption_series: pd.Series, residual_weight: float = 0.0):
+def calculate_theoretical_weights(
+    start_weight: float, consumption_series: pd.Series
+) -> pd.Series:
+    """
+    Calculate theoretical test weights based on starting weight and consumption (true or predicted)
+    Args:
+        start_weight: Starting weight at time of forecast.
+        consumption_series: Daily consumption (true or predicted) as a Pandas Series.
+
+    Returns: Theoretical weights series.
+    """
+    consumption_schema = pas.consumption_series
+    validate_data(consumption_series, consumption_schema)
+    start_weight = float(start_weight)
+
+    weights = consumption_series.copy() * -1
+    weights.iloc[0] += start_weight
+    weights = weights.cumsum().rename("weight")
+    return weights
+
+
+def test_weight_binary(start_weight: float, consumption_series: pd.Series) -> pd.Series:
+    """
+    Calculate theoretical binary weight of scale based on starting weight and consumption (true or predicted).
+    0 ~ scale weight <= 0
+    1 ~ scale weight > 0
+    Args:
+        start_weight: Starting weight at time of forecast.
+        consumption_series: Daily consumption (true or predicted) as a Pandas Series.
+
+    Returns: Theoretical binary weights series.
+    """
+    scale_weight_positive = calculate_theoretical_weights(
+        start_weight, consumption_series
+    )
+    scale_weight_positive.loc[scale_weight_positive <= 0] = 0
+    scale_weight_positive.loc[scale_weight_positive > 0] = 1
+    return scale_weight_positive
+
+
+def train_weights(weight_series: pd.Series, train_dates: pd.DatetimeIndex) -> pd.Series:
+    """
+    Get the weight_series subset for training dates and return as a Pandas Series.
+    Args:
+        weight_series: Weights as a Pandas Series.
+        train_dates: Training dates as a Pandas DataTimeIndex.
+
+    Returns: Subset of weights for training dates.
+    """
+    weight_schema = pas.weight_series
+    validate_data(weight_series, weight_schema)
+
+    weights = weight_series.copy().loc[train_dates]
+    return weights
+
+
+def residual_days(consumption_series: pd.Series, residual_weight: float) -> int:
+    """
+    Calculate and return the remaining days of consumption until all residual product is consumed.
+    Args:
+        consumption_series: Consumption values as a pandas Series.
+        residual_weight: Residual weight remaining.
+
+    Returns: Remaining days or numpy nan value if remaining days is beyond the last day in consumption series.
+
+    """
     start_timestamp = consumption_series.index[0]
     consumption_cumsum = (
         consumption_series.cumsum() - consumption_series.values[0]
@@ -122,7 +187,17 @@ def residual_days(consumption_series: pd.Series, residual_weight: float = 0.0):
     return days_remaining
 
 
-def all_residual_days(weights_consumption: pd.DataFrame, threshold: float = 0):
+def all_residual_days(
+    weights_consumption: pd.DataFrame, threshold: float = 0.0
+) -> pd.Series:
+    """
+    Calculate the residual days at multiple timestamps given weights and consumption values.
+    Args:
+        weights_consumption: DataFrame of weight and consumption values.
+        threshold: Lowest acceptable weight, used to calculate residual weight.
+                   residual weight = starting weight - threshold.
+    Returns: A series of residual days for all days in the weight_consumption DataFrame.
+    """
     dates_index = weights_consumption.index
     remaining_days = pd.Series(
         data=0, index=dates_index, dtype=float, name="residual_days"

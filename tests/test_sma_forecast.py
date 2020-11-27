@@ -125,87 +125,6 @@ def test_predict_all(mocker):
         assert sma.predict_all(train_test_splits="not a dictionary", averaging_window=1)
 
 
-def test_calculate_test_weights(mocker):
-    """
-    Test calculate_test_weights function from sma_forecast module
-    Args:
-        mocker: object used to patch outside function calls.
-    """
-    mocker.patch.object(
-        de, "validate_data", return_value=None
-    )  # assume dataset is valid
-    start_weight = float(10)
-    theoretical_weights = [10, 9, 9, 8, 7, 6, 6, 6, 5, 4]
-    valid_test_weights = pd.Series(
-        theoretical_weights, index=DATES, dtype=float, name="weight"
-    )
-
-    # call on function here
-    test_weights = sma.calculate_test_weights(start_weight, CONSUMPTION_SERIES)
-
-    # Positive testing
-    assert test_weights.equals(valid_test_weights)
-    assert (
-        sma.calculate_test_weights(int(10), CONSUMPTION_SERIES) is not None
-    )  # int should be successfully converted to integer
-
-    # Negative testing
-    # expect a float object for start_weight
-    with pytest.raises(ValueError):
-        assert sma.calculate_test_weights(
-            start_weight="not a float", consumption_series=CONSUMPTION_SERIES
-        )
-
-
-def test_weights_binary(mocker):
-    """
-    Test weights_binary function from sma_forecast module
-    Args:
-        mocker: object used to patch outside function calls.
-    """
-    theoretical_weights = [5, 4, 4, 3, 3, 1, 1, 1, 0, -1]
-    weight_series = pd.Series(
-        theoretical_weights, index=DATES, dtype=float, name="weight"
-    )
-    theoretical_binary = [1, 1, 1, 1, 1, 1, 1, 1, 0, 0]
-    valid_binary_weights = pd.Series(
-        theoretical_binary, index=DATES, dtype=float, name="weight"
-    )
-    start_weight = float(5)
-
-    # ensure an expected value is returned
-    mocker.patch.object(sma, "calculate_test_weights", return_value=weight_series)
-
-    # call on function here
-    test_binary_weights = sma.test_weight_binary(start_weight, CONSUMPTION_SERIES)
-
-    # Positive testing
-
-    # All theoretical weights > 0 should have a binary value of 1
-    # All theoretical weights <= 0 should have a binary value of 0
-    assert test_binary_weights.equals(valid_binary_weights)
-
-
-def test_train_weights(mocker):
-    """
-    Test train_weights function from sma_forecast module
-    Args:
-        mocker: object used to patch outside function calls.
-    """
-    mocker.patch.object(
-        de, "validate_data", return_value=None
-    )  # assume dataset is valid
-    weight_series = WEIGHT_SERIES
-    dates = DATES[2:]
-
-    # call on function here
-    train_weights = sma.train_weights(weight_series, dates)
-
-    # Positive testing
-    assert train_weights.index.equals(dates)
-    assert train_weights.iloc[-1] == weight_series.iloc[-1]
-
-
 def test_single_test(mocker):
     """
     Test single_test function from sma_forecast module
@@ -220,10 +139,10 @@ def test_single_test(mocker):
         de, "validate_data", return_value=None
     )  # assume dataset is valid
     mocker.patch.object(
-        sma, "calculate_test_weights", return_value="a"
+        de, "calculate_theoretical_weights", return_value="a"
     )  # ensure expected value is returned
     mocker.patch.object(
-        sma, "test_weight_binary", return_value="b"
+        de, "test_weight_binary", return_value="b"
     )  # ensure expected value is returned
     mocker.patch.object(
         sma, "predict", return_value="c"

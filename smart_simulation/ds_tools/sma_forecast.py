@@ -109,60 +109,6 @@ def predict_all(train_test_splits: dict, averaging_window: int) -> dict:
     return all_predictions
 
 
-def calculate_test_weights(
-    start_weight: float, consumption_series: pd.Series
-) -> pd.Series:
-    """
-    Calculate theoretical test weights based on starting weight and consumption (true or predicted)
-    Args:
-        start_weight: Starting weight at time of forecast.
-        consumption_series: Daily consumption (true or predicted) as a Pandas Series.
-
-    Returns: Theoretical weights series.
-    """
-    consumption_schema = pas.consumption_series
-    de.validate_data(consumption_series, consumption_schema)
-    start_weight = float(start_weight)
-
-    weights = consumption_series.copy() * -1
-    weights.iloc[0] += start_weight
-    weights = weights.cumsum().rename("weight")
-    return weights
-
-
-def test_weight_binary(start_weight: float, consumption_series: pd.Series) -> pd.Series:
-    """
-    Calculate theoretical binary weight of scale based on starting weight and consumption (true or predicted).
-    0 ~ scale weight <= 0
-    1 ~ scale weight > 0
-    Args:
-        start_weight: Starting weight at time of forecast.
-        consumption_series: Daily consumption (true or predicted) as a Pandas Series.
-
-    Returns: Theoretical binary weights series.
-    """
-    scale_weight_positive = calculate_test_weights(start_weight, consumption_series)
-    scale_weight_positive.loc[scale_weight_positive <= 0] = 0
-    scale_weight_positive.loc[scale_weight_positive > 0] = 1
-    return scale_weight_positive
-
-
-def train_weights(weight_series: pd.Series, train_dates: pd.DatetimeIndex) -> pd.Series:
-    """
-    Get the weight_series subset for training dates and return as a Pandas Series.
-    Args:
-        weight_series: Weights as a Pandas Series.
-        train_dates: Training dates as a Pandas DataTimeIndex.
-
-    Returns: Subset of weights for training dates.
-    """
-    weight_schema = pas.weight_series
-    de.validate_data(weight_series, weight_schema)
-
-    weights = weight_series.copy().loc[train_dates]
-    return weights
-
-
 def single_test(
     training_weights: pd.Series,
     consumption_series_train: pd.Series,
@@ -188,13 +134,15 @@ def single_test(
     datasets = {}
     test_dates = consumption_series_test.index
     start_weight = training_weights[-1]
-    test_theoretical_weight = calculate_test_weights(
+    test_theoretical_weight = de.calculate_theoretical_weights(
         start_weight, consumption_series_test
     )
-    test_theoretical_binary = test_weight_binary(start_weight, consumption_series_test)
+    test_theoretical_binary = de.test_weight_binary(
+        start_weight, consumption_series_test
+    )
     pred_consumption = predict(sma_window, consumption_series_train, test_dates)
-    pred_weight = calculate_test_weights(start_weight, pred_consumption)
-    pred_binary = test_weight_binary(start_weight, pred_consumption)
+    pred_weight = de.calculate_theoretical_weights(start_weight, pred_consumption)
+    pred_binary = de.test_weight_binary(start_weight, pred_consumption)
 
     datasets["train_weight"] = training_weights
     datasets["train_consumption"] = consumption_series_train
