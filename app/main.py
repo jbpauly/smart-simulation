@@ -5,8 +5,10 @@ import pandas as pd
 import statsmodels as sm
 from PIL import Image
 
+# test 1
+import app.forecasting as forecasting
 import streamlit as st
-from app import forecasting
+# from app import forecasting
 from app import plotting as pl
 from app import utilities as util
 from smart_simulation.cfg_templates import config

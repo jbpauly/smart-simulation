@@ -16,4 +16,3 @@ pandera == 0.5.*
 streamlit == 0.70.*
 plotly==4.12.*
 sktime==0.4.*
-pmdarima
