@@ -1,11 +1,20 @@
-from datetime import datetime
+import pathlib
 
+import numpy as np
+import pandas as pd
+import statsmodels as sm
 from PIL import Image
 
 import streamlit as st
+from app import forecasting
 from app import plotting as pl
 from app import utilities as util
+from smart_simulation.cfg_templates import config
 from smart_simulation.cfg_templates import customers as cm_templates
+from smart_simulation.ds_tools import data_eng as de
+
+package_path = pathlib.Path(config.package_dir)
+app_path = package_path / "app"
 
 consumption_type_templates = cm_templates.consumption_types
 consumption_probability_templates = cm_templates.probabilities
@@ -129,7 +138,6 @@ if sb_standard_subscription_analysis_checkbox:
             ]
             subscription_fig = pl.create_single_subscription_fig(sub_subscription_data)
             st.plotly_chart(subscription_fig)
-            # TODO create bar chart or table for count of day classification
 
     with st.beta_expander("Standard Subscription Breakdown"):
         close_standard_sub_file = util.read_markdown_file(
@@ -180,8 +188,55 @@ if sb_smart_subscription_architecture_checkbox:
 
 if sb_consumption_forecasting_checkbox:
     st.markdown("## Forecasting Consumption")
-    st.markdown(
-        "![Alt Text](https://media.giphy.com/media/fVeAI9dyD5ssIFyOyM/giphy.gif)"
+    sample_weight = de.load_sim_data((app_path / "sample_weight.csv"), ["weight"])
+    eod_weights = de.eod_weights(sample_weight.weight)
+    consumption_adjustments = de.create_consumption_adjustments(
+        weight_series=eod_weights, adjustment_weight=14
     )
-    st.write("section in-progress, check back later for progress.")
-    # TODO explain focus on forecasting consumption
+    consumption = de.calculate_consumption(
+        weight_series=eod_weights, adjustments=consumption_adjustments
+    )
+    avg_consumption = float(
+        "{:.2f}".format(
+            de.calcuate_consumption_avg(
+                consumption_series=consumption, all_timesteps=False
+            )
+        )
+    )
+    threshold = st.selectbox(
+        label="Select empty stock threshold (ounces)", options=[0, avg_consumption]
+    )
+    modeling_data = pd.concat([eod_weights, consumption], axis=1)
+    remaining_consumption_days = de.all_residual_days(
+        weights_consumption=modeling_data, threshold=threshold
+    )
+
+    modeling_data = pd.concat([modeling_data, remaining_consumption_days], axis=1)
+
+    prediction_dates = forecasting.create_prediction_dates(
+        sample_weight.index, min_train=50, max_forecast=14
+    )
+    forecast_size_range = np.arange(7, 15)
+    forecast_size = st.select_slider(
+        label="Select Forecast Range (days)", options=list(forecast_size_range),
+    )
+    pred_date = st.select_slider(
+        label="Select Forecast Date",
+        options=list(prediction_dates.strftime("%B %d, %Y")),
+    )
+    pred_date = pd.to_datetime(pred_date)
+    train_end_date = pred_date - pd.Timedelta("1D")
+    test_end_date = pred_date + pd.Timedelta(str(forecast_size - 1) + "D")
+    y_train = modeling_data.consumption[:train_end_date]
+    y_test = modeling_data.consumption[pred_date:test_end_date]
+    sma_forecast, sarima_forecast, rf_forecast = forecasting.forecast_consumption(
+        forecast_size=forecast_size, y_train=y_train
+    )
+    consumption_forecast_fig = pl.create_consumption_forecast_fig(
+        y_train=y_train,
+        y_test=y_test,
+        sma_pred=sma_forecast,
+        sarima_pred=sarima_forecast,
+        rf_pred=rf_forecast,
+    )
+    st.plotly_chart(consumption_forecast_fig)

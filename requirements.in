@@ -15,4 +15,5 @@ scikit-learn==0.23.*
 pandera == 0.5.*
 streamlit == 0.70.*
 plotly==4.12.*
-pmdarima==1.7.*
+sktime==0.4.*
+pmdarima

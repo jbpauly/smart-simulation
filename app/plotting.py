@@ -1,5 +1,6 @@
 import pandas as pd
 
+import altair as alt
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -190,4 +191,80 @@ def create_single_subscription_fig(dataset: pd.DataFrame) -> go.Figure:
     layout["xaxis_title"] = "Date"
     layout["xaxis_tickformat"] = "%a %b-%d<br>%Y"
     fig.layout = layout
+    return fig
+
+
+def create_consumption_forecast_fig(
+    y_train: pd.Series,
+    y_test: pd.Series,
+    sma_pred: pd.Series,
+    sarima_pred: pd.Series,
+    rf_pred: pd.Series,
+) -> go.Figure:
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=y_train.index,
+            y=y_train,
+            mode="lines",
+            line=dict(color="black"),
+            name="Historic Consumption",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=y_test.index,
+            y=y_test,
+            mode="lines",
+            line=dict(color="red"),
+            name="True Consumption",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=sma_pred.index,
+            y=sma_pred,
+            mode="lines",
+            line=dict(color="green"),
+            name="Moving Average Forecast",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=sarima_pred.index,
+            y=sarima_pred,
+            mode="lines",
+            line=dict(color="blue"),
+            name="SARIMA Forecast",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=rf_pred.index,
+            y=rf_pred,
+            mode="lines",
+            line=dict(color="gray"),
+            name="Random Forest Forecast",
+        )
+    )
+
+    train_dates = list(y_train.index)
+    test_dates = list(y_test.index)
+    default_range = [str(train_dates[-10]), str(test_dates[-1])]
+    start_end = [str(train_dates[0]), str(test_dates[-1])]
+    range_slider = RANGE_SLIDER
+    range_slider["range"] = start_end
+
+    fig_layout = dict(
+        xaxis=dict(
+            rangeselector=RANGE_SELECTOR,
+            range=default_range,
+            rangeslider=range_slider,
+            type="date",
+            tickformat="%a %b-%d<br>%Y",
+        ),
+        yaxis=dict(title=dict(text="Consumption (oz)")),
+        title=dict(text="Consumption Forecast", xanchor="center", yanchor="top", x=0.5),
+    )
+    fig.layout = fig_layout
     return fig

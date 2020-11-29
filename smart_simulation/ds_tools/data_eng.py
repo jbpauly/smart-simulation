@@ -7,6 +7,7 @@ import pandas as pd
 import daiquiri
 import pandera as pa
 from smart_simulation.cfg_templates import pandera_schemas as pas
+from smart_simulation.ds_tools import eda
 
 daiquiri.setup(
     level=logging.INFO,
@@ -86,6 +87,49 @@ def consumption_daily(consumption_series: pd.Series) -> pd.Series:
     validate_data(consumption_series, consumption_schema)
     daily_consumption = consumption_series.resample("1D").sum()
     return daily_consumption
+
+
+def create_consumption_adjustments(
+    weight_series: pd.Series, adjustment_weight: float
+) -> pd.Series:
+    """
+    Create consumption adjustments to correct for new bag arrivals in consumption calculation.
+    Args:
+        weight_series: Scale weights as a pandas Series.
+        adjustment_weight: Weight (ounces) of new bags.
+
+    Returns: Consumption adjustments as a pandas Series.
+
+    """
+    estimated_peaks = eda.find_weight_peaks(weight_series=weight_series)
+    segments = eda.create_consumption_segments(
+        weight_series=weight_series, peaks=estimated_peaks
+    )
+    segments_data = eda.create_segments_data(
+        consumption_segments=segments, weight_series=weight_series
+    )
+    segments_misaligned = eda.segments_misaligned(segments_data=segments_data)
+    if segments_misaligned:
+        adj_segments = eda.adjust_segments(
+            consumption_segments=segments, weight_series=weight_series
+        )
+        adj_segments_data = eda.create_segments_data(
+            consumption_segments=adj_segments, weight_series=weight_series
+        )
+        adj_segments_misaligned = eda.segments_misaligned(
+            segments_data=adj_segments_data
+        )
+        if adj_segments_misaligned:
+            raise Exception(
+                "Exact segments cannot be identified, check the weight series."
+            )
+        else:
+            peaks = adj_segments_data.start_time[1:].values
+    else:
+        peaks = estimated_peaks
+
+    adjustments = pd.Series(adjustment_weight, index=peaks, dtype=float, name="weight")
+    return adjustments
 
 
 def eod_weights(weight_series: pd.Series) -> pd.Series:
@@ -207,3 +251,52 @@ def all_residual_days(
         residual_weight = weights_consumption.weight[day] - threshold
         remaining_days[day] = residual_days(consumption, residual_weight)
     return remaining_days
+
+
+def calcuate_consumption_avg(
+    consumption_series: pd.Series, all_timesteps: bool = False
+) -> float:
+    """
+    Calculate and return the average consumption of a consumption series.
+    Args:
+        consumption_series: Consumption values as a pandas Series.
+        all_timesteps: Calculate the raw average if True.
+                       Calculate the average of timesteps with consumption > 0 if false.
+
+    Returns: The average consumption as a float.
+
+    """
+    avg_consumption = 0.0
+    if all_timesteps:
+        avg_consumption = consumption_series.mean()
+    else:
+        avg_consumption = consumption_series[consumption_series > 0].mean()
+    return avg_consumption
+
+
+def prep_daily_forecast(
+    weight_series: pd.Series, threshold: float = 0.0, new_bag_weight: float = 14.0
+) -> pd.DataFrame:
+    """
+    Create a dataset of end of day weights, daily consumption, and residual days of consumption.
+    Args:
+        weight_series: Scale weights as a pandas Series.
+        threshold: Threshold (ounces) for last acceptable weight before 0 days of consumption.
+                   Typically 0 or the average daily consumption amount.
+        new_bag_weight: Weight of new bags to create a clean consumption series.
+    Returns:
+
+    """
+    weights = eod_weights(weight_series=weight_series)
+    consumption_adjustments = create_consumption_adjustments(
+        weight_series=weights, adjustment_weight=new_bag_weight
+    )
+    consumption = calculate_consumption(
+        weight_series=weights, adjustments=consumption_adjustments
+    )
+    daily_data = pd.concat([weights, consumption], axis=1)
+    remaining_consumption_days = all_residual_days(
+        weights_consumption=daily_data, threshold=threshold
+    )
+    daily_data = pd.concat([daily_data, remaining_consumption_days], axis=1)
+    return daily_data
