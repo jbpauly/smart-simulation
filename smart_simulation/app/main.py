@@ -5,12 +5,11 @@ import pandas as pd
 from PIL import Image
 
 # test 1
-import smart_simulation.app.forecasting as forecasting
+import forecasting
+import plotting as pl
+import smart_simulation.cfg_templates.config as config
 import streamlit as st
-# from app import forecasting
-from app import plotting as pl
-from app import utilities as util
-from smart_simulation.cfg_templates import config
+import utilities as util
 from smart_simulation.cfg_templates import customers as cm_templates
 from smart_simulation.ds_tools import data_eng as de
 
