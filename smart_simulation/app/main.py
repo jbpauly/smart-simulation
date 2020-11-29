@@ -2,11 +2,10 @@ import pathlib
 
 import numpy as np
 import pandas as pd
-import statsmodels as sm
 from PIL import Image
 
 # test 1
-import app.forecasting as forecasting
+import smart_simulation.app.forecasting as forecasting
 import streamlit as st
 # from app import forecasting
 from app import plotting as pl
