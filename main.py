@@ -145,13 +145,13 @@ if sb_standard_subscription_analysis_checkbox:
         )
         st.markdown(close_standard_sub_file, unsafe_allow_html=True)
         heat_map_col, dist_plot_col = st.beta_columns((3, 1))
-        consumption_heatmap = Image.open("figures/bottomless_consumption.png")
+        consumption_heatmap = Image.open("app/figures/bottomless_consumption.png")
         heat_map_col.image(
             consumption_heatmap,
             caption="A Wildly Inconsistent 2020. Fitting, right?",
             use_column_width=True,
         )
-        consumption_dist = Image.open("figures/personal_order_dist.png")
+        consumption_dist = Image.open("app/figures/personal_order_dist.png")
         dist_plot_col.image(
             consumption_dist, use_column_width=True,
         )
