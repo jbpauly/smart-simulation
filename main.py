@@ -5,7 +5,7 @@ import pandas as pd
 from PIL import Image
 
 # test 1
-import forecasting
+import app.forecasting
 import plotting as pl
 import smart_simulation.cfg_templates.config as config
 import streamlit as st
