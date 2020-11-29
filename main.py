@@ -4,14 +4,13 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 
-# test 1
-import app.forecasting
-import plotting as pl
+import app.forecasting as forecasting
+import app.plotting as pl
+import app.utilities as util
 import smart_simulation.cfg_templates.config as config
+import smart_simulation.cfg_templates.customers as cm_templates
+import smart_simulation.ds_tools.data_eng as de
 import streamlit as st
-import utilities as util
-from smart_simulation.cfg_templates import customers as cm_templates
-from smart_simulation.ds_tools import data_eng as de
 
 package_path = pathlib.Path(config.package_dir)
 app_path = package_path / "app"
