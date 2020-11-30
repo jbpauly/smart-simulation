@@ -202,16 +202,29 @@ def train_weights(weight_series: pd.Series, train_dates: pd.DatetimeIndex) -> pd
     return weights
 
 
-def residual_days(consumption_series: pd.Series, residual_weight: float) -> int:
+def residual_days(
+    consumption_series: pd.Series,
+    residual_weight: float,
+    threshold: float = 0.0,
+    forecast_size: int = None,
+) -> int:
     """
     Calculate and return the remaining days of consumption until all residual product is consumed.
+    Three possible return values:
+        1. True value, if residual days is in range or consumption series
+        2. forecast size + 1,
+        if residual days is beyond range in consumption series and forecast_size is provided
+        3. -1, if residual days is beyond range in consumption series and forecast_size is not provided
     Args:
         consumption_series: Consumption values as a pandas Series.
         residual_weight: Residual weight remaining.
+        threshold: Threshold of 'empty' stock. Typically 0 or the average daily consumption (oz.).
+        forecast_size: Size of forecast.
 
-    Returns: Remaining days or numpy nan value if remaining days is beyond the last day in consumption series.
+    Returns: Remaining days of consumption.
 
     """
+    residual_weight = residual_weight - threshold
     start_timestamp = consumption_series.index[0]
     consumption_cumsum = (
         consumption_series.cumsum() - consumption_series.values[0]
@@ -226,13 +239,15 @@ def residual_days(consumption_series: pd.Series, residual_weight: float) -> int:
         days_remaining = pd.Timedelta(
             residual_end_timestamp - start_timestamp
         ) / pd.Timedelta("1D")
+    elif forecast_size:
+        days_remaining = forecast_size + 1
     else:
-        days_remaining = np.nan
+        days_remaining = -1
     return days_remaining
 
 
 def all_residual_days(
-    weights_consumption: pd.DataFrame, threshold: float = 0.0
+    weights_consumption: pd.DataFrame, threshold: float = 0.0,
 ) -> pd.Series:
     """
     Calculate the residual days at multiple timestamps given weights and consumption values.
@@ -248,8 +263,13 @@ def all_residual_days(
     )
     for day in dates_index:
         consumption = weights_consumption.consumption[day:]
-        residual_weight = weights_consumption.weight[day] - threshold
-        remaining_days[day] = residual_days(consumption, residual_weight)
+        residual_weight = weights_consumption.weight[day]
+        remaining_days[day] = residual_days(
+            consumption_series=consumption,
+            residual_weight=residual_weight,
+            threshold=threshold,
+            forecast_size=None,
+        )
     return remaining_days
 
 

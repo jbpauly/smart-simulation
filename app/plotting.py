@@ -141,7 +141,9 @@ def create_linear_subscriptions_figs(dataset: pd.DataFrame) -> go.Figure:
     return fig
 
 
-def create_single_subscription_fig(dataset: pd.DataFrame) -> go.Figure:
+def create_single_subscription_fig(
+    dataset: pd.DataFrame, single_bag_weight: int = None
+) -> go.Figure:
     color_map = {"available": "green", "unavailable": "red", "excess": "blue"}
     fig = go.Figure()
     fig.add_trace(
@@ -160,7 +162,7 @@ def create_single_subscription_fig(dataset: pd.DataFrame) -> go.Figure:
             y=[None],
             mode="markers",
             marker=dict(symbol="circle", color="red"),
-            name="Unavailable",
+            name="Out of Stock",
         )
     )
     fig.add_trace(
@@ -169,7 +171,7 @@ def create_single_subscription_fig(dataset: pd.DataFrame) -> go.Figure:
             y=[None],
             mode="markers",
             marker=dict(symbol="circle", color="green"),
-            name="Available",
+            name="Stocked / Fresh",
         )
     )
     fig.add_trace(
@@ -178,15 +180,26 @@ def create_single_subscription_fig(dataset: pd.DataFrame) -> go.Figure:
             y=[None],
             mode="markers",
             marker=dict(symbol="circle", color="blue"),
-            name="Excess",
+            name="Overstocked / Stale",
         )
     )
+    if single_bag_weight:
+        single_bag_threshold = pd.Series(single_bag_weight, index=dataset.date)
+        fig.add_trace(
+            go.Scatter(
+                x=single_bag_threshold.index,
+                y=single_bag_threshold,
+                mode="lines",
+                line=dict(dash="dash", color="black"),
+                name="New Bag Weight",
+                showlegend=True,
+            )
+        )
 
     layout = LAYOUT
     layout["title"] = dict(
         text="Consumer's Stock of Coffee", xanchor="center", yanchor="top", x=0.5
     )
-    layout["legend_title_text"] = "Coffee Availability"
     layout["yaxis_title"] = "Weight (oz)"
     layout["xaxis_title"] = "Date"
     layout["xaxis_tickformat"] = "%a %b-%d<br>%Y"
@@ -196,7 +209,7 @@ def create_single_subscription_fig(dataset: pd.DataFrame) -> go.Figure:
 
 def create_consumption_forecast_fig(
     y_train: pd.Series,
-    y_test: pd.Series,
+    y_true: pd.Series,
     sma_pred: pd.Series,
     sarima_pred: pd.Series,
     rf_pred: pd.Series,
@@ -205,53 +218,53 @@ def create_consumption_forecast_fig(
     fig.add_trace(
         go.Scatter(
             x=y_train.index,
-            y=y_train,
+            y=y_train.round(2),
             mode="lines",
             line=dict(color="black"),
-            name="Historic Consumption",
+            name="Historic",
         )
     )
     fig.add_trace(
         go.Scatter(
-            x=y_test.index,
-            y=y_test,
+            x=y_true.index,
+            y=y_true.round(2),
             mode="lines",
-            line=dict(color="red"),
-            name="True Consumption",
+            line=dict(dash="dash", color="black"),
+            name="True",
         )
     )
     fig.add_trace(
         go.Scatter(
             x=sma_pred.index,
-            y=sma_pred,
+            y=sma_pred.round(2),
             mode="lines",
             line=dict(color="green"),
-            name="Moving Average Forecast",
+            name="SMA",
         )
     )
     fig.add_trace(
         go.Scatter(
             x=sarima_pred.index,
-            y=sarima_pred,
+            y=sarima_pred.round(2),
             mode="lines",
             line=dict(color="blue"),
-            name="SARIMA Forecast",
+            name="SARIMA",
         )
     )
     fig.add_trace(
         go.Scatter(
             x=rf_pred.index,
-            y=rf_pred,
+            y=rf_pred.round(2),
             mode="lines",
             line=dict(color="gray"),
-            name="Random Forest Forecast",
+            name="Random Forest",
         )
     )
 
     train_dates = list(y_train.index)
-    test_dates = list(y_test.index)
-    default_range = [str(train_dates[-10]), str(test_dates[-1])]
-    start_end = [str(train_dates[0]), str(test_dates[-1])]
+    pred_dates = list(y_true.index)
+    default_range = [str(train_dates[-10]), str(pred_dates[-1])]
+    start_end = [str(train_dates[0]), str(pred_dates[-1])]
     range_slider = RANGE_SLIDER
     range_slider["range"] = start_end
 
@@ -265,6 +278,94 @@ def create_consumption_forecast_fig(
         ),
         yaxis=dict(title=dict(text="Consumption (oz)")),
         title=dict(text="Consumption Forecast", xanchor="center", yanchor="top", x=0.5),
+    )
+    fig.layout = fig_layout
+    return fig
+
+
+def create_weight_forecast_fig(
+    train_weight: pd.Series,
+    true_weight: pd.Series,
+    sma_weight: pd.Series,
+    sarima_weight: pd.Series,
+    rf_weight: pd.Series,
+    threshold_weight: pd.Series,
+) -> go.Figure:
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=train_weight.index,
+            y=train_weight.round(2),
+            mode="lines",
+            line=dict(color="black"),
+            name="Historic",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=true_weight.index,
+            y=true_weight.round(2),
+            mode="lines",
+            line=dict(dash="dash", color="black"),
+            name="True",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=sma_weight.index,
+            y=sma_weight.round(2),
+            mode="lines",
+            line=dict(color="green"),
+            name="SMA",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=sarima_weight.index,
+            y=sarima_weight.round(2),
+            mode="lines",
+            line=dict(color="blue"),
+            name="SARIMA",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=rf_weight.index,
+            y=rf_weight.round(2),
+            mode="lines",
+            line=dict(color="gray"),
+            name="Random Forest",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=threshold_weight.index,
+            y=threshold_weight.round(2),
+            mode="lines",
+            line=dict(dash="dash", color="red"),
+            name="Empty Threshold",
+        )
+    )
+
+    train_dates = list(train_weight.index)
+    pred_dates = list(true_weight.index)
+    default_range = [str(train_dates[-10]), str(pred_dates[-1])]
+    start_end = [str(train_dates[0]), str(pred_dates[-1])]
+    range_slider = RANGE_SLIDER
+    range_slider["range"] = start_end
+
+    fig_layout = dict(
+        xaxis=dict(
+            rangeselector=RANGE_SELECTOR,
+            range=default_range,
+            rangeslider=range_slider,
+            type="date",
+            tickformat="%a %b-%d<br>%Y",
+        ),
+        yaxis=dict(title=dict(text="Weight (oz)")),
+        title=dict(
+            text="Scale Weight Forecast", xanchor="center", yanchor="top", x=0.5
+        ),
     )
     fig.layout = fig_layout
     return fig

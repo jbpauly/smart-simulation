@@ -1,6 +1,6 @@
 #### What is a Smart Subscription?
 
-Simply put Paul Graham, "[it's] like streaming for stuff." More on the [it] later.
+Simply put by Paul Graham, "[it's] like streaming for stuff." More on the [it] later.
 
 The differentiation between digital and physical streaming lies in the balance of supply and demand.
 All parties can be happy with over-supply in the digital world.
@@ -11,7 +11,7 @@ This meets the constant supply criteria for on-demand consumption, and minimizes
 #### How does a Smart Subscription Work?
 
 Bottomless is the first of its kind smart subscription company.
-In fact, the company was the subject of Paul Gramham's streaming epiphany.
+In fact, the company was the subject of Paul Gramham's physical streaming epiphany.
 They provide smart subscriptions for premium coffee from top roaster across the country.
 To achieve just-in-time delivery, Bottomless provides subscribers a wifi connected kitchen scale and monitors
  their consumption.

@@ -19,7 +19,6 @@ consumption_type_templates = cm_templates.consumption_types
 consumption_probability_templates = cm_templates.probabilities
 customer_templates = cm_templates.customers
 
-
 st.sidebar.header("Building a Smart Subscription")
 st.sidebar.subheader("Chose a section:")
 sb_problem_introduction_checkbox = st.sidebar.checkbox(
@@ -46,7 +45,6 @@ with st.sidebar.beta_expander("Try out a Smart Subscription"):
         unsafe_allow_html=True,
     )
     st.markdown("![Alt Text](https://media.giphy.com/media/dGhlifOCTtSdW/giphy.gif)")
-
 
 if sb_problem_introduction_checkbox:
     intro_file = util.read_markdown_file("introduction.md")
@@ -135,7 +133,9 @@ if sb_standard_subscription_analysis_checkbox:
                 (linear_subscription_data["customer"] == selected_customer)
                 & (linear_subscription_data["duration"] == selected_duration)
             ]
-            subscription_fig = pl.create_single_subscription_fig(sub_subscription_data)
+            subscription_fig = pl.create_single_subscription_fig(
+                sub_subscription_data, single_bag_weight=12
+            )
             st.plotly_chart(subscription_fig)
 
     with st.beta_expander("Standard Subscription Breakdown"):
@@ -144,17 +144,18 @@ if sb_standard_subscription_analysis_checkbox:
         )
         st.markdown(close_standard_sub_file, unsafe_allow_html=True)
         heat_map_col, dist_plot_col = st.beta_columns((3, 1))
-        consumption_heatmap = Image.open("app/figures/bottomless_consumption.png")
+        consumption_heatmap = Image.open(
+            app_path / "figures/bottomless_consumption.png"
+        )
         heat_map_col.image(
             consumption_heatmap,
             caption="A Wildly Inconsistent 2020. Fitting, right?",
             use_column_width=True,
         )
-        consumption_dist = Image.open("app/figures/personal_order_dist.png")
+        consumption_dist = Image.open(app_path / "figures/personal_order_dist.png")
         dist_plot_col.image(
             consumption_dist, use_column_width=True,
         )
-
 
 if sb_on_demand_consumption_checkbox:
     st.markdown(
@@ -175,67 +176,155 @@ if sb_on_demand_consumption_checkbox:
             "https://bottomless-products.s3-us-west-1.amazonaws.com/miscellaneous/video/reordering-1920.webm"
         )
 
-    # TODO review smart subscription for Michael, Liana, Joe
-
 if sb_smart_subscription_architecture_checkbox:
-    st.markdown("## Architecting Smart Subscriptions")
-    st.markdown(
-        "![Alt Text](https://media.giphy.com/media/fVeAI9dyD5ssIFyOyM/giphy.gif)"
+    st.markdown("## Technical Architecture")
+    setup_arch_file = util.read_markdown_file("setup_smart_sub_arch.md")
+    st.markdown(setup_arch_file, unsafe_allow_html=True)
+    arch_svg = Image.open(app_path / "figures/architecture.png")
+    st.image(
+        arch_svg, use_column_width=True,
     )
-    st.write("section in-progress, check back later for progress.")
-    # TODO explain the architecture
 
 if sb_consumption_forecasting_checkbox:
-    st.markdown("## Forecasting Consumption")
-    sample_weight = de.load_sim_data((app_path / "sample_weight.csv"), ["weight"])
-    eod_weights = de.eod_weights(sample_weight.weight)
-    consumption_adjustments = de.create_consumption_adjustments(
-        weight_series=eod_weights, adjustment_weight=14
-    )
-    consumption = de.calculate_consumption(
-        weight_series=eod_weights, adjustments=consumption_adjustments
-    )
-    avg_consumption = float(
-        "{:.2f}".format(
-            de.calcuate_consumption_avg(
-                consumption_series=consumption, all_timesteps=False
+    st.markdown("## Consumption Forecasting")
+    with st.beta_expander("Forecasting Approach", expanded=True):
+        model_approach = util.read_markdown_file("model_approach.md")
+        st.markdown(model_approach, unsafe_allow_html=True)
+
+    with st.beta_expander("Consumption Calculation", expanded=False):
+        consumption_calculation = util.read_markdown_file("consumption_calculation.md")
+        st.markdown(consumption_calculation, unsafe_allow_html=True)
+
+    with st.beta_expander("Model Options", expanded=False):
+        model_options = util.read_markdown_file("model_options.md")
+        st.markdown(model_options, unsafe_allow_html=True)
+
+    with st.beta_expander("Forecasting Example", expanded=False):
+        st.write("")
+        st.markdown(
+            """
+        Test the models at various forecasting horizons and on different dates with an sample dataset.
+        You can also set the _empty stock threshold_. For this dataset, the average consumption is 1.25 oz.
+        """
+        )
+        st.write("")
+        sample_weight = de.load_sim_data((app_path / "sample_weight.csv"), ["weight"])
+        eod_weights = de.eod_weights(sample_weight.weight)
+        consumption_adjustments = de.create_consumption_adjustments(
+            weight_series=eod_weights, adjustment_weight=14
+        )
+        consumption = de.calculate_consumption(
+            weight_series=eod_weights, adjustments=consumption_adjustments
+        )
+        avg_consumption = float(
+            "{:.2f}".format(
+                de.calcuate_consumption_avg(
+                    consumption_series=consumption, all_timesteps=False
+                )
             )
         )
-    )
-    threshold = st.selectbox(
-        label="Select empty stock threshold (ounces)", options=[0, avg_consumption]
-    )
-    modeling_data = pd.concat([eod_weights, consumption], axis=1)
-    remaining_consumption_days = de.all_residual_days(
-        weights_consumption=modeling_data, threshold=threshold
-    )
+        threshold_col, forecast_range_col = st.beta_columns(2)
+        threshold_options = {
+            0: "True Zero: 0 oz.",
+            avg_consumption: f"Avg. Consumption: {avg_consumption} oz.",
+        }
+        threshold = threshold_col.radio(
+            label="Empty Stock Threshold",
+            options=list(threshold_options.keys()),
+            format_func=threshold_options.get,
+        )
+        modeling_data = pd.concat([eod_weights, consumption], axis=1)
+        remaining_consumption_days = de.all_residual_days(
+            weights_consumption=modeling_data, threshold=threshold
+        )
 
-    modeling_data = pd.concat([modeling_data, remaining_consumption_days], axis=1)
+        modeling_data = pd.concat([modeling_data, remaining_consumption_days], axis=1)
 
-    prediction_dates = forecasting.create_prediction_dates(
-        sample_weight.index, min_train=50, max_forecast=14
-    )
-    forecast_size_range = np.arange(7, 15)
-    forecast_size = st.select_slider(
-        label="Select Forecast Range (days)", options=list(forecast_size_range),
-    )
-    pred_date = st.select_slider(
-        label="Select Forecast Date",
-        options=list(prediction_dates.strftime("%B %d, %Y")),
-    )
-    pred_date = pd.to_datetime(pred_date)
-    train_end_date = pred_date - pd.Timedelta("1D")
-    test_end_date = pred_date + pd.Timedelta(str(forecast_size - 1) + "D")
-    y_train = modeling_data.consumption[:train_end_date]
-    y_test = modeling_data.consumption[pred_date:test_end_date]
-    sma_forecast, sarima_forecast, rf_forecast = forecasting.forecast_consumption(
-        forecast_size=forecast_size, y_train=y_train
-    )
-    consumption_forecast_fig = pl.create_consumption_forecast_fig(
-        y_train=y_train,
-        y_test=y_test,
-        sma_pred=sma_forecast,
-        sarima_pred=sarima_forecast,
-        rf_pred=rf_forecast,
-    )
-    st.plotly_chart(consumption_forecast_fig)
+        prediction_dates = forecasting.create_prediction_dates(
+            sample_weight.index, min_train=50, max_forecast=14
+        )
+        forecast_size_range = np.arange(7, 15)
+        forecast_size = forecast_range_col.select_slider(
+            label="Select Forecast Range (days)", options=list(forecast_size_range),
+        )
+        pred_date = st.select_slider(
+            label="Select Forecast Date",
+            options=list(prediction_dates.strftime("%B %d, %Y")),
+        )
+        pred_date = pd.to_datetime(pred_date)
+        train_end_date = pred_date - pd.Timedelta("1D")
+        test_end_date = pred_date + pd.Timedelta(str(forecast_size - 1) + "D")
+        y_train = modeling_data.consumption[:train_end_date]
+        y_true = modeling_data.consumption[pred_date:test_end_date]
+        sma_forecast, sarima_forecast, rf_forecast = forecasting.forecast_consumption(
+            forecast_size=forecast_size, y_train=y_train
+        )
+        start_weight = modeling_data.weight[pred_date - pd.Timedelta("1D")]
+
+        consumption_forecast_fig = pl.create_consumption_forecast_fig(
+            y_train=y_train,
+            y_true=y_true,
+            sma_pred=sma_forecast,
+            sarima_pred=sarima_forecast,
+            rf_pred=rf_forecast,
+        )
+        st.write("")
+        st.plotly_chart(consumption_forecast_fig)
+
+        rmse_explanation, rmse_table = st.beta_columns(2)
+        rmse_dateset = forecasting.rmse_table(
+            y_true=y_true,
+            sma_pred=sma_forecast,
+            sarima_pred=sarima_forecast,
+            rf_pred=rf_forecast,
+        )
+        rmse_file = util.read_markdown_file("rmse.md")
+        rmse_explanation.markdown(rmse_file, unsafe_allow_html=True)
+        rmse_table.table(rmse_dateset.style.format("{:.2}"))
+
+        train_weight = modeling_data.weight[y_train.index]
+        true_theoretical_weight = de.calculate_theoretical_weights(
+            start_weight=start_weight, consumption_series=y_true
+        )
+        sma_theoretical_weight = de.calculate_theoretical_weights(
+            start_weight=start_weight, consumption_series=sma_forecast
+        )
+        sarima_theoretical_weight = de.calculate_theoretical_weights(
+            start_weight=start_weight, consumption_series=sarima_forecast
+        )
+        rf_theoretical_weight = de.calculate_theoretical_weights(
+            start_weight=start_weight, consumption_series=rf_forecast
+        )
+        train_test_range = y_train.index.union(y_true.index)
+        threshold_range = pd.Series(data=threshold, index=train_test_range)
+
+        weight_forecast_fig = pl.create_weight_forecast_fig(
+            train_weight=train_weight,
+            true_weight=true_theoretical_weight,
+            sma_weight=sma_theoretical_weight,
+            sarima_weight=sarima_theoretical_weight,
+            rf_weight=rf_theoretical_weight,
+            threshold_weight=threshold_range,
+        )
+        st.plotly_chart(weight_forecast_fig)
+
+        residuals_dataset = forecasting.residuals_table(
+            residual_weight=start_weight,
+            threshold=threshold,
+            forecast_size=forecast_size,
+            y_true=y_true,
+            sma_pred=sma_forecast,
+            sarima_pred=sarima_forecast,
+            rf_pred=rf_forecast,
+        )
+        residuals_explanation, residuals_table = st.beta_columns(2)
+        residuals_file = util.read_markdown_file("residual_days.md")
+        residuals_explanation.markdown(residuals_file, unsafe_allow_html=True)
+        residuals_table.table(residuals_dataset)
+        st.write("")
+
+    with st.beta_expander(
+        "Forecasting Assessment and Expanded Application", expanded=False
+    ):
+        model_assessment = util.read_markdown_file("model_assessment.md")
+        st.markdown(model_assessment, unsafe_allow_html=True)
