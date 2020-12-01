@@ -5,10 +5,10 @@ This can be broken down further:
 
 1. Estimate of shipping duration
     - How long will shipping take for product (a) to reach customer (X)?
-2. Estimate of remaining days of customer's current stock
+2. Estimate customer's remaining available days of consumption
     - How many days of consumption of product (a) does customer (X) have left in stock?
 
-**_We'll focus on estimating remaining days of customer stock._**
+**_We'll focus on estimating remaining days of consumption._**
 
 #### Brief review of a few constraints
 1. The weight/stock is directly influenced by the customer's consumption
@@ -19,7 +19,7 @@ This can be broken down further:
     - maximum = weight of new shipment + leftover weight from previous shipment
 
 #### Forecasting Framework
-We could get to remaining days of stock by directly forecasting scale weight
+We could get to remaining days of consumption by directly forecasting scale weight
  and identifying when weight crosses an **empty stock** threshold.
 However, the scale weight measurement is dependent on consumer behavior, **consumption**.
 Framing the model around consumption simplifies the problem and offers more flexibility when problems arise.

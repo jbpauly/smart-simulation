@@ -20,13 +20,9 @@ Warehouses, Shipping*.
 
 ## Simulate smart subscriptions for yourself by following the steps below
 
-Simulator for Smart Subscription Services.
-
-This package generates data, simulations, and counter-factual scenarios
-for weight-based smart subscriptions. Weight-based smart subscriptions
-utilize hardware (wifi weight scales) and software (machine learning) to
-provide just-in-time delivery of repeatably purchased goods. Bottomless
-is the first of its kind.
+This package generates simulated desired smart subscription data:
+1. customer's desired consumption
+2. scale weight measurements
 
 ## Dependencies
 Python >= 3.7
