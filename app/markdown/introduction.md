@@ -1,4 +1,4 @@
-# Reliable Consumer Goods Subscriptions
+# Consumer Goods Subscriptions
 <br/>
 Your pantry and refrigerator are in a constant state of flux.
 You stock up, consume, stock up, consume.

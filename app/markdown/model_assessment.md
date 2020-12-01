@@ -11,7 +11,7 @@ With that context, the higher performance of the SARIMA model should be expected
 The model had 1 _seasonal_  autoregressive and 1 _seasonal_  moving average component, with a 7 day seasonality.
 - Put another way, every Monday, the model only weighs the relationship to consumption the previous Monday(s),
 not any other day the previous week.
-- This fit our data very well, because there's no dependence day to day in the consumption,
+- This model fits the data very well, because there's no interdependence day to day in the consumption,
 but it is highly correlated week to week (set in the consumer templates).
 
 Since the data was built by random number generators within our framework,
@@ -21,11 +21,11 @@ Day to day, there's inaccuracy in the consumption forecasts, but they balance ou
 
 #### Model Selection
 A naive model a suitable choice for forecasting new customer consumption.
-Just a few consumption datapoints and a naive model can operationalize can the smart subscription.
+Just a few consumption datapoints and a naive model can operationalize the smart subscription.
 It's also justifiable to continue using a naive approach longer than one might expect to use it,
 _as long as it's meeting the needs of the subscription service_.
 
-Once a consumer starts to outrun the naive model, the next step up is a statistical
+Once a consumer starts to outrun the naive model, the next step up is a more complex model.
 
 #### Machine Learning over Traditional Statistical Approaches
 For time series forecasting, a standard regression model is more scalable than a stats based model like SARIMA.
@@ -34,10 +34,10 @@ a single machine learning model could be used for all consumption forecasts, sca
 The traditional statistical approaches are sensitive to non-stationarity,
 and unique models should be separately maintained customer to customer or cohort to cohort.
 
-For example, we specified a 7 day seasonality, but will everyone's consumption follow a 7 day pattern?
-Medical professionals, factory and refinery workers, travelling business personnel, etc. all have unique schedule.
+For example, we specified a 7 day seasonality, but will all customer consumption follow a 7 day pattern?
+Medical professionals, factory and refinery workers, travelling business personnel, etc. all have unique schedules.
 
-Lastly, enriching the models with more data features is also easier to accomplish with machine learning models.
+Lastly, enriching a dataset with more features is also easier to utilize in machine learning models.
 
 This doesn't mean abandon all statistical time series analysis for machine learning!
 Traditional time series analysis helps to contextualize your data and could even lead to feature generation.
@@ -49,12 +49,12 @@ Reasonable next steps:
 
 1. Generate forecast confidence intervals
 2. Build a forecasting / purchasing dashboard
-3. Serve forecasts to a _human in the loop system_
+3. Serve forecasts to a _human in the loop_ system
     - Set a model confidence threshold
     - Set a residual days alert range
     - Send forecasts within the residuals range to system
-        - Automate high confidence forecasts
-        - Require human decision on low confidence forecast
+        - Automate orders with high confidence forecasts
+        - Require human decision on orders with low confidence forecasts
 
 #### Consumption Calculations
 It can't be stated enough that the success of any these models is reliant on the consumption calculations.
