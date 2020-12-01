@@ -1,20 +1,9 @@
 # smart-simulation
 
-
-[![image](https://img.shields.io/pypi/v/smart_simulation.svg)](https://pypi.python.org/pypi/smart_simulation)
-
-[![image](https://img.shields.io/travis/jbpauly/smart_simulation.svg)](https://travis-ci.com/jbpauly/smart_simulation)
-
-[![Documentation Status](https://readthedocs.org/projects/smart-simulation/badge/?version=latest)](https://smart-simulation.readthedocs.io/en/latest/?badge=latest)
-
-[![Updates](https://pyup.io/repos/github/jbpauly/smart_simulation/shield.svg)](https://pyup.io/repos/github/jbpauly/smart_simulation/)
-
-## Weight Based Smart Subscriptions
-![](app/figures/example.gif)
-
-Use the tool about learn about weight based smart subscriptions.
-
+Use this tool learn about weight based smart subscriptions.
 [Launch the app!](https://share.streamlit.io/jbpauly/smart-simulation/main.py)
+
+![](app/figures/example.gif)
 
 How does a weight based subscription work? As an example, the Bottomless
 service will be described. Bottomless provides customers with a wifi
@@ -32,6 +21,8 @@ dataset. There are multiple agents or factors involved with the working
 of smart subscriptions: *Customers, Scales, Product Marketplace,
 Warehouses, Shipping*.
 
+## Generate data for yourself by following the steps below
+
 Simulator for Smart Subscription Services.
 
 This package generates data, simulations, and counter-factual scenarios
@@ -39,9 +30,6 @@ for weight-based smart subscriptions. Weight-based smart subscriptions
 utilize hardware (wifi weight scales) and software (machine learning) to
 provide just-in-time delivery of repeatably purchased goods. Bottomless
 is the first of its kind.
-
-
-## Generate data for yourself by following the steps below
 
 ## Dependencies
 Python >= 3.7
