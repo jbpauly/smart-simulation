@@ -76,6 +76,7 @@ def test_single_day(monkeypatch):
 
     # Positive testing
     assert test_output == 1
+    # TODO validate the template items
 
     # Negative testing
     with pytest.raises(TypeError):

@@ -13,4 +13,6 @@ time-window==0.1.*
 scipy==1.5.*
 scikit-learn==0.23.*
 pandera == 0.5.*
-
+streamlit == 0.70.*
+plotly==4.12.*
+sktime==0.4.*
