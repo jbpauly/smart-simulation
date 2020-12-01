@@ -1,5 +1,6 @@
 #### Result Comparison
 You likely picked up a few behaviors of our models and results.
+
 1. The SARIMA model almost always has the lowest RMSE score
 2. Forecasted residual days, across all models, appear to be more accurate on a longer horizon
 
@@ -45,6 +46,7 @@ Traditional time series analysis helps to contextualize your data and could even
 To actually use these forecasts for smart subscriptions would require additional development.
 
 Reasonable next steps:
+
 1. Generate forecast confidence intervals
 2. Build a forecasting / purchasing dashboard
 3. Serve forecasts to a _human in the loop system_
