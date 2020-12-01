@@ -2,7 +2,7 @@
 You likely picked up a few behaviors of our models and results.
 
 1. The SARIMA model almost always has the lowest RMSE score
-2. Forecasted residual days, across all models, appear to be more accurate on a longer horizon
+2. Forecasted remaining consumption, across all models, appear to be more accurate on a longer horizon
 
 These behaviors can be tied back to our consumer framework and data generation process.
 The desired consumption and probability of consumption are constant week to week (not day to day).
@@ -16,7 +16,7 @@ but it is highly correlated week to week (set in the consumer templates).
 
 Since the data was built by random number generators within our framework,
 it holds a fairly steady mean over a long time period.
-This is why the final _residual days of consumption_ are fairly accurate on a longer horizon.
+This is why forecasted _remaining days of consumption_ is fairly accurate on a longer horizon.
 Day to day, there's inaccuracy in the consumption forecasts, but they balance out over time.
 
 #### Model Selection
@@ -42,7 +42,7 @@ Lastly, enriching a dataset with more features is also easier to utilize in mach
 This doesn't mean abandon all statistical time series analysis for machine learning!
 Traditional time series analysis helps to contextualize your data and could even lead to feature generation.
 
-#### Improving the Usability of Consumption and Residual Days Forecasts
+#### Improving the Usability of Consumption Forecasts
 To actually use these forecasts for smart subscriptions would require additional development.
 
 Reasonable next steps:
@@ -51,8 +51,8 @@ Reasonable next steps:
 2. Build a forecasting / purchasing dashboard
 3. Serve forecasts to a _human in the loop_ system
     - Set a model confidence threshold
-    - Set a residual days alert range
-    - Send forecasts within the residuals range to system
+    - Set a remaining consumption (days) alert range
+    - Send forecasts within the remaining consumption range to system
         - Automate orders with high confidence forecasts
         - Require human decision on orders with low confidence forecasts
 

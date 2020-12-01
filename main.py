@@ -19,6 +19,12 @@ consumption_type_templates = cm_templates.consumption_types
 consumption_probability_templates = cm_templates.probabilities
 customer_templates = cm_templates.customers
 
+st.set_page_config(
+    page_title="Smart Subscriptions",
+    page_icon="♾️ ☕",
+    layout="centered",
+    initial_sidebar_state="expanded",
+)
 st.sidebar.header("Building a Smart Subscription")
 st.sidebar.subheader("Chose a section:")
 sb_problem_introduction_checkbox = st.sidebar.checkbox(

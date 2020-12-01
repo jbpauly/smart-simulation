@@ -1,4 +1,4 @@
-# Consumer Goods Subscriptions
+# Infinite Consumer Goods
 <br/>
 Your pantry and refrigerator are in a constant state of flux.
 You stock up, consume, stock up, consume.

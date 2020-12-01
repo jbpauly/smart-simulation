@@ -1,27 +1,24 @@
 # smart-simulation
 
-Use this tool learn about weight based smart subscriptions.
-[Launch the app!](https://share.streamlit.io/jbpauly/smart-simulation/main.py)
-
 ![](app/figures/example.gif)
 
-How does a weight based subscription work? As an example, the Bottomless
-service will be described. Bottomless provides customers with a wifi
-scale linked to their account. Customers select a delivery preference
-from three choices: Never Run Out, Just-In-Time, As Fresh As Possible.
-This preference provides additional context for the ordering algorithm.
-Customers then store their subscribed product, like coffee beans, on the
-scale. Consumption data is captured by weight measurements and monitored
-by Bottomless' ordering algorithm. Orders are then triggered to arrive
-when expected by the customer based off their resupply preference.
+Use this tool learn about weight based smart subscriptions for consumer goods.
+[Launch the app!](https://share.streamlit.io/jbpauly/smart-simulation/main.py)
 
-Data and machine learning is at the core of smart subscriptions.
-Starting or advancing a smart subscription business requires a quality
-dataset. There are multiple agents or factors involved with the working
-of smart subscriptions: *Customers, Scales, Product Marketplace,
+[Bottomless](https://www.bottomless.com/) is the first of its kind smart subscription provider.
+The company provides continuous, just-in-time, delivery of premium coffee from top roaster across the country.
+
+To achieve just-in-time delivery,
+Bottomless provides subscribers a wifi connected kitchen scale, monitors their consumption,
+and sends off the next order before the customer's local stock runs out.
+The consumption, as a way of weight, data is the critical component used to balance supply and demand.
+
+Data and machine learning is at the core of smart subscriptions,
+and there are multiple agents or factors involved with
+smart subscriptions: *Customers, Scales, Product Marketplace,
 Warehouses, Shipping*.
 
-## Generate data for yourself by following the steps below
+## Simulate smart subscriptions for yourself by following the steps below
 
 Simulator for Smart Subscription Services.
 

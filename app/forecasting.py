@@ -210,7 +210,7 @@ def residuals_table(
     )
     all_residuals = pd.DataFrame(
         [y_true_residual, sma_residual, arima_residual, rf_residual],
-        columns=["Residual Days"],
+        columns=["Remaining Consumption (Days)"],
         index=["True", "Moving Average", "SARIMA", "Random Forest"],
     )
     return all_residuals
