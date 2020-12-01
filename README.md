@@ -20,9 +20,9 @@ Warehouses, Shipping*.
 
 ## Simulate smart subscriptions for yourself by following the steps below
 
-This package generates simulated desired smart subscription data:
-1. customer's desired consumption
-2. scale weight measurements
+This package generates simulated smart subscription data:
+1. Customer desired consumption
+2. Scale weight measurements
 
 ## Dependencies
 Python >= 3.7

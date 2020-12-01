@@ -21,7 +21,7 @@ customer_templates = cm_templates.customers
 
 st.set_page_config(
     page_title="Smart Subscriptions",
-    page_icon="♾️",
+    page_icon=":package:️",
     layout="centered",
     initial_sidebar_state="expanded",
 )
