@@ -3,7 +3,6 @@ import pathlib
 
 import numpy as np
 import pandas as pd
-from PIL import Image
 
 import app.forecasting as forecasting
 import app.plotting as pl
@@ -151,17 +150,13 @@ if sb_standard_subscription_analysis_checkbox:
         )
         st.markdown(close_standard_sub_file, unsafe_allow_html=True)
         heat_map_col, dist_plot_col = st.beta_columns((3, 1))
-        consumption_heatmap = Image.open(
-            app_path / "figures/bottomless_consumption.png"
-        )
         heat_map_col.image(
-            consumption_heatmap,
+            "app/figures/bottomless_consumption.png",
             caption="A Wildly Inconsistent 2020. Fitting, right?",
             use_column_width=True,
         )
-        consumption_dist = Image.open(app_path / "figures/personal_order_dist.png")
         dist_plot_col.image(
-            consumption_dist, use_column_width=True,
+            "app/figures/personal_order_dist.png", use_column_width=True,
         )
 
 if sb_on_demand_consumption_checkbox:
@@ -178,25 +173,19 @@ if sb_on_demand_consumption_checkbox:
     with st.beta_expander("Smart(er) not Harder"):
         smart_subscription_file = util.read_markdown_file("setup_smart_subscription.md")
         st.markdown(smart_subscription_file, unsafe_allow_html=True)
-
-        scale_gif_file_ = open("app/figures/bottomless_scale.gif", "rb")
-        scale_gif_contents = scale_gif_file_.read()
-        scale_gif_data_url = base64.b64encode(scale_gif_contents).decode("utf-8")
-        scale_gif_file_.close()
         st.text("")
         st.markdown("**Or watch Bottomless in action:**")
-        st.markdown(
-            f'<img src="data:image/gif;base64,{scale_gif_data_url}" height="315", width="560">',
-            unsafe_allow_html=True,
+        st.image(
+            "app/figures/bottomless_scale.gif", use_column_width=True,
         )
+
 
 if sb_smart_subscription_architecture_checkbox:
     st.markdown("## Technical Architecture")
     setup_arch_file = util.read_markdown_file("setup_smart_sub_arch.md")
     st.markdown(setup_arch_file, unsafe_allow_html=True)
-    arch_svg = Image.open(app_path / "figures/architecture.png")
     st.image(
-        arch_svg, use_column_width=True,
+        "app/figures/architecture.png", use_column_width=True,
     )
 
 if sb_consumption_forecasting_checkbox:
