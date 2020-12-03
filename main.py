@@ -179,14 +179,14 @@ if sb_on_demand_consumption_checkbox:
         smart_subscription_file = util.read_markdown_file("setup_smart_subscription.md")
         st.markdown(smart_subscription_file, unsafe_allow_html=True)
 
-        file_ = open("app/figures/bottomless_scale.gif", "rb")
-        contents = file_.read()
-        data_url = base64.b64encode(contents).decode("utf-8")
-        file_.close()
+        scale_gif_file_ = open("app/figures/bottomless_scale.gif", "rb")
+        scale_gif_contents = scale_gif_file_.read()
+        scale_gif_data_url = base64.b64encode(scale_gif_contents).decode("utf-8")
+        scale_gif_file_.close()
         st.text("")
         st.markdown("**Or watch Bottomless in action:**")
         st.markdown(
-            f'<img src="data:image/gif;base64,{data_url}" height="400">',
+            f'<img src="data:image/gif;base64,{scale_gif_data_url}" height="315", width="560">',
             unsafe_allow_html=True,
         )
 
