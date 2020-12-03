@@ -28,4 +28,3 @@ In an interview with Patrick O'Shaughnessy, Michael describes the importance of 
 **You can listen to the whole interview here:**
 <iframe style="border: none" src="//html5-player.libsyn.com/embed/episode/id/8963231/height/90/theme/custom/thumbnail
 /yes/direction/backward/render-playlist/no/custom-color/38b6cd/" height="90" width="100%" scrolling="no"  allowfullscreen webkitallowfullscreen mozallowfullscreen oallowfullscreen msallowfullscreen></iframe>
-

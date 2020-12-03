@@ -1,3 +1,4 @@
+import base64
 import pathlib
 
 import numpy as np
@@ -177,9 +178,16 @@ if sb_on_demand_consumption_checkbox:
     with st.beta_expander("Smart(er) not Harder"):
         smart_subscription_file = util.read_markdown_file("setup_smart_subscription.md")
         st.markdown(smart_subscription_file, unsafe_allow_html=True)
+
+        file_ = open("app/figures/bottomless_scale.gif", "rb")
+        contents = file_.read()
+        data_url = base64.b64encode(contents).decode("utf-8")
+        file_.close()
+        st.text("")
         st.markdown("**Or watch Bottomless in action:**")
-        st.video(
-            "https://bottomless-products.s3-us-west-1.amazonaws.com/miscellaneous/video/reordering-1920.webm"
+        st.markdown(
+            f'<img src="data:image/gif;base64,{data_url}" height="400">',
+            unsafe_allow_html=True,
         )
 
 if sb_smart_subscription_architecture_checkbox:
