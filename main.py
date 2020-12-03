@@ -113,7 +113,7 @@ if sb_standard_subscription_analysis_checkbox:
                 st.write(servings_with_dt_fmt)
             else:
                 chart = pl.create_servings_fig(desired_servings)
-                st.plotly_chart(chart)
+                st.plotly_chart(chart, use_container_width=True)
     with st.beta_expander("Analyze Subscription"):
         analyze_standard_sub_file = util.read_markdown_file(
             "setup_analyze_standard_sub.md"
@@ -142,7 +142,7 @@ if sb_standard_subscription_analysis_checkbox:
             subscription_fig = pl.create_single_subscription_fig(
                 sub_subscription_data, single_bag_weight=12
             )
-            st.plotly_chart(subscription_fig)
+            st.plotly_chart(subscription_fig, use_container_width=True)
 
     with st.beta_expander("Standard Subscription Breakdown"):
         close_standard_sub_file = util.read_markdown_file(
@@ -272,7 +272,7 @@ if sb_consumption_forecasting_checkbox:
             rf_pred=rf_forecast,
         )
         st.write("")
-        st.plotly_chart(consumption_forecast_fig)
+        st.plotly_chart(consumption_forecast_fig, use_container_width=True)
 
         rmse_explanation, rmse_table = st.beta_columns(2)
         rmse_dateset = forecasting.rmse_table(
@@ -309,7 +309,7 @@ if sb_consumption_forecasting_checkbox:
             rf_weight=rf_theoretical_weight,
             threshold_weight=threshold_range,
         )
-        st.plotly_chart(weight_forecast_fig)
+        st.plotly_chart(weight_forecast_fig, use_container_width=True)
 
         residuals_dataset = forecasting.residuals_table(
             residual_weight=start_weight,
