@@ -2,7 +2,7 @@
 
 ![](app/figures/example.gif)
 
-Use this tool learn about weight based smart subscriptions for consumer goods.
+Use this tool to learn about weight based smart subscriptions for consumer goods.
 [Launch the app!](https://share.streamlit.io/jbpauly/smart-simulation/main.py)
 
 [Bottomless](https://www.bottomless.com/) is the first of its kind smart subscription provider.
