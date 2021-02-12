@@ -14,7 +14,7 @@ attrs==19.3.0             # via jsonschema, pytest
 babel==2.8.0              # via time-window
 backcall==0.2.0           # via ipython
 base58==2.0.1             # via streamlit
-bleach==3.2.1             # via nbconvert
+bleach>=3.3.0             # via nbconvert
 blinker==1.4              # via streamlit
 boto3==1.16.13            # via streamlit
 botocore==1.19.13         # via boto3, s3transfer, streamlit
